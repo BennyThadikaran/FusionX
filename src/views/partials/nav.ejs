@@ -1,0 +1,180 @@
+<% const active = 'has-background-link has-text-white' %>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="/">
+      <img src="/images/logo.svg" alt="Home" width="109" height="28" />
+    </a>
+
+    <a
+      role="button"
+      class="navbar-burger"
+      aria-label="menu"
+      aria-expanded="false"
+      data-name="burger"
+    >
+      <span aria-hidden="true" data-name="burger"></span>
+      <span aria-hidden="true" data-name="burger"></span>
+      <span aria-hidden="true" data-name="burger"></span>
+    </a>
+  </div>
+
+  <div id="navbar-menu1" class="navbar-menu has-text-weight-bold">
+    <!-- TOP LEVEL LEFT NAV LINKS -->
+    <div class="navbar-start">
+      <!-- SHOP TOP LEVEL -->
+      <div class="navbar-item has-dropdown is-hoverable" data-name="shopLink">
+        <a class="navbar-link">Shop</a>
+
+        <!-- SHOP DROPDOWN -->
+        <div class="navbar-dropdown">
+          <!-- MENS TOP LEVEL -->
+          <div class="navbar-submenu">
+            <a
+              aria-controls="dropdown-menu"
+              class="navbar-submenu-link"
+              data-name="navbar"
+            >
+              <div class="navbar-item navbar-link">Mens</div>
+            </a>
+            <!-- MENS SUBMENU -->
+            <div class="navbar-submenu-dropdown" role="menu">
+              <a href="/shop?category=camxts" class="navbar-item">T Shirts</a>
+              <a href="/shop?category=camxho" class="navbar-item">Hoodies</a>
+              <a href="/shop?category=camxsh" class="navbar-item">Shorts</a>
+              <a href="/shop?category=camxtp" class="navbar-item"
+                >Track Pants</a
+              >
+              <a href="/shop?category=camxas" class="navbar-item"
+                >Athletic Socks</a
+              >
+            </div>
+            <!-- END MENS SUBMENU -->
+          </div>
+          <!-- END MENS TOP LEVEL -->
+
+          <!-- WOMENS TOP LEVEL -->
+          <div class="navbar-submenu">
+            <a
+              aria-controls="dropdown-menu"
+              class="navbar-submenu-link"
+              data-name="navbar"
+            >
+              <div class="navbar-item navbar-link">Womens</div>
+            </a>
+            <!-- WOMENS SUBMENU -->
+            <div class="navbar-submenu-dropdown" role="menu">
+              <a href="/shop?category=cawxts" class="navbar-item">T Shirts</a>
+              <a href="/shop?category=cawxsh" class="navbar-item">Shorts</a>
+              <a href="/shop?category=cawxtp" class="navbar-item"
+                >Track Pants</a
+              >
+              <a href="/shop?category=cawxas" class="navbar-item"
+                >Athletic Socks</a
+              >
+              <a href="/shop?category=cawxaw" class="navbar-item"
+                >Active Wear</a
+              >
+            </div>
+            <!-- END WOMENS SUBMENU -->
+          </div>
+          <!-- END WOMENS TOP LEVEL -->
+
+          <!-- EXERCISE TOP LEVEL -->
+          <div class="navbar-submenu">
+            <a
+              aria-controls="dropdown-menu"
+              class="navbar-submenu-link"
+              data-name="navbar"
+            >
+              <div class="navbar-item navbar-link">Exercise & Fitness</div>
+            </a>
+            <!-- EXERCISE SUBMENU -->
+            <div class="navbar-submenu-dropdown" role="menu">
+              <a href="/shop?category=efacfr" class="navbar-item"
+                >Foam Rollers</a
+              >
+              <a href="/shop?category=efacrb" class="navbar-item"
+                >Resistance Bands</a
+              >
+              <a href="/shop?category=efacrt" class="navbar-item"
+                >Resistance Tubes</a
+              >
+            </div>
+            <!-- END EXERCISE SUBMENU -->
+          </div>
+          <!-- END EXERCISE TOP LEVEL -->
+        </div>
+        <!-- END SHOP DROPDOWN -->
+      </div>
+      <!-- END SHOP TOP LEVEL -->
+
+      <!-- BLOG TOP LEVEL -->
+      <a href="/blog" class="navbar-item">Blog</a>
+    </div>
+    <!-- END TOP LEVEL LEFT NAV LINKS -->
+
+    <!-- TOP LEVEL RIGHT NAV LINKS -->
+    <div class="navbar-end">
+      <!-- START IF LOGGED -->
+      <% if (isLogged) { %>
+      <div class="navbar-item has-dropdown is-hoverable is-boxed">
+        <a class="navbar-link">
+          <i class="i-user i-user-dims"></i>
+        </a>
+        <div class="navbar-dropdown">
+          <!-- IF ADMIN -->
+          <% if (role === "admin") { %>
+          <a href="/profile/admin/user" class="navbar-item">Create User</a>
+          <% } %>
+          <!-- END IF ADMIN -->
+          <!-- IF ADMIN | COLLAB -->
+          <% if (["admin", "collab"].includes(role)) { %>
+          <a href="/profile/admin/blog-post" class="navbar-item"
+            >Create Blog Post</a
+          >
+          <hr class="navbar-divider" />
+          <% } %>
+          <!-- END IF ADMIN | COLLAB -->
+          <a href="/profile/orders" class="navbar-item">Orders</a>
+          <a href="/profile/billing" class="navbar-item">Billing Address</a>
+          <a href="/profile/change-password" class="navbar-item"
+            >Change Password</a
+          >
+          <a href="/profile/logout" class="navbar-item" data-name="logout"
+            >Logout</a
+          >
+        </div>
+      </div>
+      <% } %>
+      <!-- END IF LOGGED -->
+
+      <div class="navbar-item">
+        <!-- GROUPED BUTTONS -->
+        <div class="buttons has-text-weight-bold">
+          <!-- IF NOT LOGGED -->
+          <% if (!isLogged) { %>
+          <a
+            href="/profile/login"
+            class="navbar-item button is-outlined is-link"
+            >Login</a
+          >
+          <a href="/profile/signup" class="navbar-item button is-info"
+            >Signup</a
+          >
+          <% } %>
+          <!-- END IF NOT LOGGED -->
+
+          <!-- CART -->
+          <a data-name="cart" class="button is-outlined has-text-danger-dark">
+            <i class="i-cart i-cart-dims"></i>
+            <span class="ml-4" id="cartCount"><%= cartCount %></span>
+          </a>
+        </div>
+        <!-- END GROUPED BUTTONS -->
+      </div>
+      <!-- END NAVBAR ITEM -->
+    </div>
+    <!-- END TOP LEVEL RIGHT NAV LINKS -->
+  </div>
+</nav>

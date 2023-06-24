@@ -1,0 +1,27 @@
+<!-- header -->
+<%- include('partials/head') %>
+
+<!-- navigation -->
+<%- include('partials/nav') %>
+<div class="container">
+  <div class="section is-medium">
+    <h1
+      class="block is-size-2 has-text-centered has-text-success has-text-weight-bold"
+    >
+      Thank you for shopping with us.
+    </h1>
+    <h2 class="block is-size-4 has-text-centered">
+      Your order id: <span class="has-text-weight-bold"><%= orderId %></span>
+    </h2>
+    <p class="block is-size-4 has-text-centered">
+      An order confirmation email has been sent to you.
+    </p>
+    <p class="block is-size-4 has-text-centered">
+      Estimated Delivery Date:
+      <span class="has-text-weight-bold"><%= deliveryDate %></span>.
+    </p>
+  </div>
+</div>
+
+<!-- footer -->
+<%- include('partials/footer'); %>

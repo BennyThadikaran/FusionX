@@ -1,0 +1,23 @@
+<nav
+  class="breadcrumb has-arrow-separator is-capitalized"
+  aria-label="breadcrumbs"
+>
+  <ul>
+    <!-- START FOR BC -->
+    <% for (const crumb of bc) { %>
+
+    <!-- IF ELSE CRUMB.ACTIVE -->
+    <% if (crumb.active) { %>
+    <li class="is-active">
+      <a href="<%= crumb.url %>" aria-current="page"><%= crumb.name %></a>
+    </li>
+    <% } else { %>
+    <!-- IF ELSE CRUMB.ACTIVE CONTINUED -->
+    <li><a href="<%= crumb.url %>"><%= crumb.name %></a></li>
+    <% } %>
+    <!-- END IF ELSE CRUMB.ACTIVE -->
+
+    <% } %>
+    <!-- END FOR BC -->
+  </ul>
+</nav>

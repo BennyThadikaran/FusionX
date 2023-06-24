@@ -1,0 +1,107 @@
+<div class="columns">
+  <section class="column">
+    <h2 class="title is-4 has-text-centered">Review Items and Offers</h2>
+    <div class="columns">
+      <section class="column is-three-quarters">
+        <% for (const item of checkout.items) { %>
+        <div class="cart-item">
+          <div class="cart-item-title"><%= item.title %></div>
+          <div class="cart-item-row">
+            <div class="cart-item-image">
+              <img
+                class="cart-item-image"
+                src="https://placehold.co/120x90/<%= item.img %>"
+                alt="<%= item.alt_img %>"
+              />
+            </div>
+            <div><%= item.qty %></div>
+            <div class="cart-item-price currency"><%= item.price %></div>
+            <div class="cart-item-price">
+              -
+              <span id="<%= `${item.sku}-discount` %>" class="currency"
+                ><%= item.discount || 0 %></span
+              >
+            </div>
+            <div class="cart-item-total currency"><%= item.total %></div>
+          </div>
+        </div>
+        <% } %>
+      </section>
+
+      <section class="column">
+        <table class="table is-bordered is-fullwidth">
+          <tbody>
+            <tr>
+              <td colspan="2">SubTotal</td>
+              <td class="currency" id="subtotal"><%= checkout.subtotal %></td>
+            </tr>
+            <tr>
+              <td colspan="2">Shipping</td>
+              <td class="currency" id="shipping"><%= checkout.shipping %></td>
+            </tr>
+            <tr>
+              <td colspan="2">Shipping Discount</td>
+              <td class="currency" id="shippingDiscount">
+                - <%= checkout.shippingDiscount %>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">Item Discount</td>
+              <td class="currency">
+                -
+                <span id="itemDiscount"><%= checkout.itemDiscount %></span>
+              </td>
+            </tr>
+
+            <tr>
+              <th colspan="2">You Pay</th>
+              <th class="currency" id="total"><%= checkout.total %></th>
+            </tr>
+            <tr>
+              <td colspan="3" id="appliedOffers" class="has-text-centered">
+                <% for (const offerCode of checkout.appliedOffers) { %>
+                <span class="tag is-primary is-light"><%= offerCode %></span>
+                <% } %>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="3" class="has-text-centered">
+                <button
+                  class="button is-link"
+                  data-name="activeOffers"
+                  data-modal="activeOffers"
+                >
+                  Show Active offers
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </section>
+</div>
+
+<div id="activeOffers" class="is-hidden">
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Active Offers</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <% for (const offer of offers) {if (offer.code === "SHIPFREE") continue %>
+      <div class="box is-clearfix">
+        <button
+          class="button is-warning is-pulled-right"
+          data-name="offer"
+          data-target="<%= offer.code %>"
+        >
+          Apply
+        </button>
+        <p class="title is-6"><%= offer.code %></p>
+        <p class="subtitle is-6"><%= offer.info %></p>
+      </div>
+      <% } %>
+    </section>
+  </div>
+</div>

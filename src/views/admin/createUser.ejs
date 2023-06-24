@@ -1,0 +1,106 @@
+<!-- HEADER -->
+<%- include('../partials/head'); %>
+
+<!-- NAVIGATION -->
+<%- include('../partials/nav'); %>
+
+<!-- MAIN SECTION -->
+<div class="section">
+  <div class="columns">
+    <div class="column is-10 is-offset-1">
+      <form name="createUser">
+        <div class="field is-horizontal">
+          <div class="field-label is-normal"></div>
+          <div class="field-body">
+            <h1 class="title">Create User</h1>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label">Name</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input
+                  class="input"
+                  type="text"
+                  name="fname"
+                  id="fname"
+                  placeholder="First Name"
+                />
+              </div>
+              <div id="name" class="help is-size-6"></div>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                <input
+                  id="lname"
+                  class="input"
+                  type="text"
+                  name="lname"
+                  placeholder="Last Name"
+                />
+              </div>
+              <div class="help is-size-6"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label" for="email1">Email</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input
+                  id="email1"
+                  class="input"
+                  type="email"
+                  name="email"
+                  placeholder="john.doe@example.com"
+                />
+              </div>
+              <div class="help is-size-6"></div>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                <div class="select">
+                  <select name="role" id="role">
+                    <option value="none">Select User Role</option>
+                    <option value="collab">Collaborator</option>
+                  </select>
+                </div>
+              </div>
+              <div class="help is-size-6"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label is-normal"></div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <button class="button is-link" type="submit" name="btn">
+                  Create User
+                </button>
+              </div>
+              <div class="help is-size-6"></div>
+            </div>
+          </div>
+        </div>
+
+        <input type="hidden" name="csrf" value="<%= csrf %>" />
+      </form>
+    </div>
+  </div>
+</div>
+<!-- END MAIN SECTION -->
+
+<!-- FOOTER -->
+<%- include('../partials/footer'); %>

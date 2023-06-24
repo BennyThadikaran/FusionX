@@ -1,0 +1,300 @@
+<!-- HEADER -->
+<%- include('partials/head'); %>
+
+<!-- NAVIGATION -->
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="/">
+      <img src="/images/logo.svg" alt="Home" width="109" height="28" />
+    </a>
+  </div>
+</nav>
+
+<!-- START IF ELSE ITEMCOUNT - Out of stock -->
+<% if (itemCount === 0) { %>
+<div class="columns">
+  <div class="column is-three-fifths is-offset-one-fifth">
+    <article class="message">
+      <div class="message-header">
+        <p>Items out of stock</p>
+      </div>
+      <div class="message-body">
+        <p class="has-text-weight-bold has-text-centered block">
+          Items in your cart have run out of stock.
+        </p>
+      </div>
+    </article>
+  </div>
+</div>
+
+<!-- IF ELSE ITEMCOUNT CONTINUED -->
+<% } else { %>
+
+<div class="container">
+  <div class="column">
+    <div id="multistep" class="multistep">
+      <div id="multistep-progress" class="multistep-progress"></div>
+      <ul id="multistep-num" class="multistep-num">
+        <li class="step active">1</li>
+        <li class="step">2</li>
+        <li class="step">3</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="container multistep-tab">
+  <!-- START IF ERRORITEMS - Some items are less or out of stock -->
+  <% if (errorItems.length > 0) { %>
+  <div class="columns">
+    <div class="column is-three-fifths is-offset-one-fifth">
+      <article class="message">
+        <div class="message-header">
+          <p>Changes to your Cart</p>
+        </div>
+        <div class="message-body">
+          <p class="has-text-weight-bold has-text-centered block">
+            Your cart items have been modified. Please review changes below.
+          </p>
+
+          <!-- Iterate over modified items -->
+          <% for (const item of errorItems) { %>
+          <div class="cart-item">
+            <div class="cart-item-title has-text-weight-bold">
+              <%= item.title %>
+            </div>
+            <div class="cart-item-row">
+              <div class="cart-item-image">
+                <img
+                  class="cart-item-image"
+                  src="https://placehold.co/120x90/<%= item.img %>"
+                  alt="<%= item.alt_img %>"
+                />
+              </div>
+              <div class="has-text-danger">
+                <%= item.qty || "Out of Stock" %>
+              </div>
+              <div class="cart-item-price has-text-weight-bold currency">
+                <%= item.price %>
+              </div>
+              <div class="cart-item-total has-text-weight-bold currency">
+                <%= item.price * item.qty %>
+              </div>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </article>
+    </div>
+  </div>
+  <% } %>
+  <!-- END IF ERRORITEMS -->
+
+  <!-- START CHECKOUT FORM -->
+  <form name="checkout" id="checkout" autocomplete="on" novalidate>
+    <h1 class="title has-text-centered">Guest Checkout</h1>
+    <div class="notification has-text-centered">
+      You can review all details on the next page, before placing your order.
+    </div>
+
+    <!-- START 1ST LEVEL COLUMN -->
+    <div class="columns">
+      <!-- CONTACT DETAILS -->
+      <section class="column">
+        <h2 class="title is-4">Contact Details</h2>
+
+        <div class="field">
+          <label class="label" for="fname">First Name</label>
+          <div class="control">
+            <input class="input" type="text" name="given-name" id="fname"
+            placeholder="John" value="<%= user ? user.fname : "" %>" />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="lname">Last Name</label>
+          <div class="control">
+            <input id="lname" class="input" type="text" name="family-name"
+            placeholder="Doe" value="<%= user ? user.lname : "" %>" />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="email1">Email</label>
+          <div class="control">
+            <input id="email1" class="input" type="email" name="email"
+            placeholder="john.doe@example.com" value="<%= user ? user.email : ""
+            %>" />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="tel-local">Mobile No</label>
+          <div class="control has-icons-left">
+            <input id="tel-local" class="input" type="text" name="tel-local"
+            value="<%= user ? user.tel : "" %>" />
+            <span class="icon is-left">+91</span>
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <input type="hidden" name="csrf" value="<%= csrf %>" />
+      </section>
+      <!-- END CONTACT DETAILS -->
+
+      <!-- BILLING ADDRESS -->
+      <section>
+        <h2 class="title is-4">Billing Address</h2>
+
+        <div class="field">
+          <label class="label" for="billto-postal-code">Pincode</label>
+          <div class="control">
+            <input class="input" type="text" name="billto-postal-code"
+            id="billto-postal-code" placeholder="Enter Pincode to get Region and
+            State." value="<%= billTo ? billTo.postalCode : "" %>" />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input class="input" type="text" name="billto-region"
+                placeholder="Region" value="<%= billTo ? billTo.region : "" %>"
+                readonly />
+              </div>
+            </div>
+            <div class="field">
+              <div class="control">
+                <input class="input" type="text" name="billto-state"
+                placeholder="State" value="<%= billTo ? billTo.state : "" %>"
+                readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="billto-name">Fullname</label>
+          <div class="control">
+            <input class="input" type="text" name="billto-name" id="billto-name"
+            placeholder="Benny Thadikaran" value="<%= billTo ? billTo.name : ""
+            %>" />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="billto">Address</label>
+          <div class="control">
+            <textarea
+              class="textarea"
+              name="billto-street-address"
+              id="billto"
+              rows="4"
+              placeholder="Delivery Address"
+            >
+<%= billTo ? billTo.address : "" %></textarea
+            >
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <div class="control">
+            <label class="checkbox">
+              <input type="checkbox" name="sameShpTo" checked />
+              Ship to same Billing address
+            </label>
+          </div>
+        </div>
+      </section>
+      <!-- END BILLING ADDRESS -->
+    </div>
+    <!-- END 1ST LEVEL COLUMN -->
+
+    <!-- START 2ND LEVEL COLUMNS -->
+    <div id="shpadr" class="columns is-hidden">
+      <!-- SHIPPING ADDRESS COLUMN -->
+      <section class="column is-half">
+        <h2 class="title is-4">Shipping Address</h2>
+
+        <div class="field">
+          <label class="label" for="shipto-postal-code">Pincode</label>
+          <div class="control">
+            <input class="input" type="text" name="shipto-postal-code"
+            id="shipto-postal-code" placeholder="Enter Pincode to get Region and
+            State." value="<%= shipTo ? shipTo.postalCode : "" %>" />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input class="input" type="text" name="shipto-region"
+                placeholder="Region" value="<%= shipTo ? shipTo.region : "" %>"
+                readonly />
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                <input class="input" type="text" name="shipto-state"
+                placeholder="State" value="<%= shipTo ? shipTo.state : "" %>"
+                readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="shipto-name">Fullname</label>
+          <div class="control">
+            <input class="input" type="text" name="shipto-name" id="shipto-name"
+            placeholder="John Doe" value="<%= shipTo ? shipTo.name : "" %>" />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="shipto-street-address">Address</label>
+          <div class="control">
+            <textarea
+              class="textarea"
+              name="shipto-street-address"
+              id="shipto-street-address"
+              rows="4"
+              placeholder="Shipping Address"
+            >
+<%= shipTo ? shipTo.address : "" %></textarea
+            >
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+      </section>
+      <!-- END SHIPPING ADDRESS COLUMN -->
+    </div>
+    <!-- END 2ND LEVEL COLUMNS -->
+  </form>
+</div>
+
+<div id="checkoutItems" class="container multistep-tab"></div>
+<div id="checkoutReview" class="container multistep-tab"></div>
+
+<div class="container">
+  <div class="column is-pulled-right buttons">
+    <button id="multistep-prev" class="button is-info" disabled>Prev</button>
+    <button id="multistep-next" class="button is-info">Next</button>
+  </div>
+</div>
+<% } %>
+<!-- END IF ELSE ITEMCOUNT -->
+
+<!-- FOOTER -->
+<%- include('partials/footer'); %>

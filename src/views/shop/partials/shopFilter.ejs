@@ -1,0 +1,70 @@
+<div id="filterModal1" class="is-hidden">
+  <form name="productFilter" class="modal-card" method="get">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Filters</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <fieldset class="field checkbox-btn">
+        <legend class="label is-uppercase">Sort By Price</legend>
+        <div class="control">
+          <label class="radio" for="sort1">
+            <input type="radio" name="sort" value="-1" id="sort1" />
+            <span>Highest to Lowest</span>
+          </label>
+          <label class="radio" for="sort2">
+            <input type="radio" name="sort" value="1" id="sort2" />
+            <span>Lowest to Highest</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <% if (filter.type) { for (const [key, val] of
+      Object.entries(filter.type)) { %>
+      <fieldset class="field checkbox-btn">
+        <legend class="label is-uppercase"><%= key %></legend>
+
+        <div class="control">
+          <% for (const attr of val) { %>
+          <label for="<%= attr %>" class="checkbox">
+            <input
+              name="<%= key %>"
+              type="checkbox"
+              id="<%= attr %>"
+              value="<%= attr %>"
+            />
+            <span><%= attr %></span>
+          </label>
+          <% } %>
+        </div>
+      </fieldset>
+      <% } } if (filter.specs) { for (const [key, val] of
+      Object.entries(filter.specs)) { %>
+      <fieldset class="field checkbox-btn">
+        <legend class="label is-uppercase"><%= key %></legend>
+
+        <div class="control">
+          <% for (const attr of val) { %>
+          <label for="<%= attr %>" class="checkbox">
+            <input
+              name="<%= key %>"
+              type="checkbox"
+              id="<%= attr %>"
+              value="<%= attr %>"
+            />
+            <span><%= attr %></span>
+          </label>
+          <% } %>
+        </div>
+      </fieldset>
+      <% } } %>
+    </section>
+    <footer class="modal-card-foot">
+      <button type="submit" class="button is-success">Apply</button>
+      <button data-name="filterReset" class="button is-danger">
+        Clear Filters
+      </button>
+      <button class="button" aria-label="close">Cancel</button>
+    </footer>
+  </form>
+</div>

@@ -1,0 +1,60 @@
+<!-- HEADER -->
+<%- include('partials/head'); %>
+
+<!-- NAVIGATION -->
+<%- include('partials/nav'); %>
+<div class="section">
+  <div class="columns">
+    <div class="column is-10 is-offset-1">
+      <h1 class="title has-text-centered">Orders</h1>
+      <% if (!orderList.length) { %>
+      <div class="section">
+        <p class="title is-4 has-text-centered">
+          There are no orders to display.
+        </p>
+      </div>
+      <% } else { %>
+      <!-- START FOR LOOP -->
+      <% for (const order of orderList) { %>
+      <div class="box">
+        <div
+          class="block is-flex is-justify-content-space-between is-flex-wrap-wrap"
+        >
+          <p>
+            Order ID: <span class="has-text-weight-bold"><%= order._id %></span>
+          </p>
+          <p>
+            Order Date:
+            <span class="has-text-weight-bold"
+              ><%= new Date(order.createdAt).toDateString() %></span
+            >
+          </p>
+        </div>
+        <div class="block is-flex is-justify-content-space-between">
+          <p>Total: <span class="currency"><%= order.total %></span></p>
+          <p class="has-text-weight-bold">
+            <%= order.payment.status.toUpperCase() %>
+          </p>
+        </div>
+        <div class="block is-flex is-justify-content-space-between">
+          <p>
+            Delivery:
+            <span class="has-text-weight-bold"
+              ><%= order.shipment.status.toUpperCase() %></span
+            >
+          </p>
+          <a href="/profile/orders/<%= order._id%>" class="button is-info"
+            >Details</a
+          >
+        </div>
+      </div>
+      <% } %>
+      <!-- END FOR -->
+      <% } %>
+      <!-- END IF -->
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<%- include('partials/footer'); %>

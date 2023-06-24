@@ -1,0 +1,62 @@
+<% const dt = post.mod_dt %>
+
+<!-- HEADER -->
+<%- include('../partials/head'); %>
+
+<!-- NAVIGATION -->
+<%- include('../partials/nav'); %>
+
+<div class="container">
+  <!-- POST SECTION -->
+  <section class="section is-medium py-6">
+    <!-- BREADCRUMBS -->
+    <%- include('../partials/breadcrumbs'); %>
+
+    <div class="columns">
+      <div class="column is-three-quarters">
+        <h1 class="title block"><%= post.title %></h1>
+        <figure class="image block">
+          <img
+            src="<%= imgUrl %>/<%= post.header_image.image %>"
+            alt="<%= post.header_image.alt_text %>"
+          />
+        </figure>
+        <span class="block subtitle has-text-grey-dark"
+          >Posted on
+          <time datetime="<%= dt.toISOString() %>"
+            ><%= dt.toDateString() %></time
+          >
+          by <a href="/blog?author=<%= post.author %>"><%= post.author %></a>
+        </span>
+        <div class="tags mt-4">
+          <% for (const tag of post.tags) { %>
+          <a href="/blog?tag=<%= tag %>" class="tag is-dark is-medium"
+            ><%= tag %></a
+          >
+          <% } %>
+        </div>
+
+        <%- post.body.body %>
+      </div>
+      <!-- END POST BODY -->
+    </div>
+  </section>
+  <!-- END POST SECTION -->
+
+  <!-- COMMENT SECTION -->
+  <section class="section is-medium pt-0 pb-6">
+    <div class="columns">
+      <div class="column is-three-quarters" id="comment">
+        <article
+          class="media"
+          id="comment-form"
+          data-id="<%= post._id %>"
+        ></article>
+      </div>
+    </div>
+  </section>
+  <!-- END COMMENT SECTION -->
+</div>
+
+<!-- FOOTER -->
+<%- include('../partials/footer'); %>

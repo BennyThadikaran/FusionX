@@ -1,0 +1,64 @@
+<div id="filterModal1" class="is-hidden">
+  <!-- MODAL HEADER -->
+  <header class="modal-card-head">
+    <p class="modal-card-title">Fake Payment Gateway</p>
+    <button class="delete" aria-label="close"></button>
+  </header>
+
+  <!-- MODAL BODY -->
+  <section class="modal-card-body">
+    <form name="quickpay">
+      <div class="field">
+        <label for="cname">Name on Card</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="cname"
+            name="cardname"
+            placeholder="John More Doe"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label for="ccnum">Credit card number</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="ccnum"
+            name="cardnumber"
+            placeholder="1111-2222-3333-4444"
+          />
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-body">
+          <div class="field">
+            <input class="input" type="text" placeholder="MM/YY" />
+          </div>
+          <div class="field">
+            <input
+              class="input"
+              type="text"
+              id="cvv"
+              name="cvv"
+              placeholder="CVV"
+            />
+          </div>
+        </div>
+      </div>
+    </form>
+    <p class="has-text-centered has-text-info has-text-weight-bold">
+      FORM DATA IS NOT VALIDATED OR SENT TO SERVER. ANY DATA ENTERED IS
+      DISCARDED
+    </p>
+  </section>
+
+  <!-- MODAL FOOTER -->
+  <footer class="modal-card-foot">
+    <button type="submit" class="button is-success">Pay</button>
+    <button class="button" aria-label="close">Cancel</button>
+  </footer>
+</div>

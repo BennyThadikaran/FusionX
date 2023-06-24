@@ -1,0 +1,65 @@
+<!-- HEADER -->
+<%- include('../partials/head'); %>
+
+<!-- NAVIGATION -->
+<%- include('../partials/nav'); %>
+
+<div class="section">
+  <!-- BREADCRUMBS -->
+  <%- include('../partials/breadcrumbs'); %>
+
+  <!-- SHOP FILTERS -->
+  <button
+    data-name="filter"
+    data-modal="filterModal1"
+    class="button is-outlined has-text-weight-bold block"
+  >
+    <i class="i-filter i-filter-dims"></i>
+    <span class="ml-4">Filter</span>
+  </button>
+
+  <% if (!products.length) { %>
+
+  <div class="section">
+    <h1 class="title is-4 has-text-centered">No products to display</h1>
+  </div>
+  <% } else { %>
+  <div class="is-flex is-flex-wrap-wrap" id="shop-content">
+    <% for (const [i, product] of products.entries()) { %>
+    <a href="/shop/<%= product.href %>" class="card card-sm">
+      <div class="card-image">
+        <figure class="image is-4by3">
+          <img
+            src="<%= imgUrl %>/276x207/<%= product.image[0] %>"
+            alt="<%= product.image[1] %>"
+            width="276"
+            height="207"
+          />
+        </figure>
+      </div>
+      <div class="card-content px-1">
+        <div class="media">
+          <div class="media-content ">
+            <p class="title is-5"><%= product.title %></p>
+            <p class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"><%= product.price %></p>
+          </div>
+        </div>
+      </div>
+    </a>
+    <% } %>
+    <!-- END FOR PRODUCTS -->
+  </div>
+  <div class="has-text-centered">
+    <button
+      class="button is-info is-medium"
+      data-id="<%= typeof limit === "undefined" ? products.at(-1)._id : limit %>"
+      data-name="loadMore"
+    >
+      Load More
+    </button>
+  </div>
+  <% } %>
+  <!-- END IF PRODUCTS.LENGTH -->
+</div>
+<%- include('../partials/footer'); %><%- include('./partials/shopFilter.ejs');
+%>

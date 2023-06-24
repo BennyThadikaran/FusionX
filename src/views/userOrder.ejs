@@ -1,0 +1,133 @@
+<!-- HEADER -->
+<%- include('partials/head'); %>
+
+<!-- NAVIGATION -->
+<%- include('partials/nav'); %>
+<div class="section">
+  <div class="columns">
+    <div class="column is-10 is-offset-1">
+      <div class="column">
+        <a href="/profile/orders">< Back to Orders</a>
+      </div>
+      <div
+        class="column is-flex is-justify-content-space-between is-flex-wrap-wrap"
+      >
+        <p>
+          <span class="has-text-weight-bold">Order ID: </span><%= order._id %>
+        </p>
+        <p>
+          <span class="has-text-weight-bold">Order Date: </span><%= new
+          Date(order.createdAt).toString().substring(0, 24) %>
+        </p>
+      </div>
+
+      <div class="column is-flex is-justify-content-space-between">
+        <p>
+          <span class="has-text-weight-bold">Payment Status: </span><%=
+          order.payment.status.toUpperCase() %>
+        </p>
+        <p>
+          <span class="has-text-weight-bold">Delivery: </span><%=
+          order.shipment.status.toUpperCase() %>
+        </p>
+      </div>
+
+      <div class="columns">
+        <div class="column is-half">
+          <article class="message">
+            <div class="message-header">
+              <p>Delivery Address</p>
+            </div>
+            <div class="message-body">
+              <% const shipTo = order.shipment.address %>
+              <p><%= shipTo.name %></p>
+              <p><%= shipTo.address %></p>
+              <p><%= `${shipTo.region} ${shipTo.postalCode}` %></p>
+              <p><%= shipTo.state %></p>
+            </div>
+          </article>
+        </div>
+
+        <div class="column">
+          <article class="message">
+            <div class="message-header">
+              <p>Billing Address</p>
+            </div>
+            <div class="message-body">
+              <% const billTo = order.billTo %>
+              <p><%= billTo.name %></p>
+              <p><%= billTo.address %></p>
+              <p><%= `${billTo.region} ${billTo.postalCode}` %></p>
+              <p><%= billTo.state %></p>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="columns">
+        <div class="column is-three-quarters">
+          <% for (const item of order.items) { %>
+          <div class="cart-item">
+            <div class="cart-item-title"><%= item.title %></div>
+            <div class="cart-item-row">
+              <div class="cart-item-image">
+                <img
+                  class="cart-item-image"
+                  src="https://placehold.co/120x90/<%= item.img %>"
+                  alt="<%= item.alt_img %>"
+                />
+              </div>
+              <div><%= item.qty %></div>
+              <div class="cart-item-price currency"><%= item.price %></div>
+              <div
+                id="<%= `${item.sku}-discount` %>"
+                class="cart-item-price currency"
+              >
+                - <%= item.discount || 0 %>
+              </div>
+              <div class="cart-item-total currency"><%= item.total %></div>
+            </div>
+          </div>
+          <% } %>
+        </div>
+
+        <div class="column">
+          <table class="table is-bordered is-fullwidth">
+            <tbody>
+              <tr>
+                <td colspan="2">SubTotal</td>
+                <td class="currency"><%= order.subtotal %></td>
+              </tr>
+              <tr>
+                <td colspan="2">Shipping</td>
+                <td class="currency"><%= order.shipping %></td>
+              </tr>
+              <tr>
+                <td colspan="2">Shipping Discount</td>
+                <td class="currency">
+                  -
+                  <span><%= order.shippingDiscount %></span>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">Item Discount</td>
+                <td class="currency">
+                  -
+                  <span><%= order.itemDiscount %></span>
+                </td>
+              </tr>
+
+              <tr>
+                <th colspan="2">Order Total</th>
+                <th class="currency"><%= order.total %></th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<%- include('partials/footer'); %>

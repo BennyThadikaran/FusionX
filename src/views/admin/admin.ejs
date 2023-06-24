@@ -1,0 +1,77 @@
+<!-- HEADER -->
+<%- include('partials/head'); %>
+
+<!-- NAVIGATION -->
+<%- include('partials/nav'); %>
+
+<!-- MAIN SECTION -->
+<div class="section">
+  <div class="columns">
+    <div class="column is-10 is-offset-1">
+      <h1 class="title">Create User</h1>
+      <form name="createUser">
+        <div class="field">
+          <label class="label" for="fname">First Name</label>
+          <div class="control">
+            <input
+              class="input"
+              type="text"
+              name="fname"
+              id="fname"
+              placeholder="John"
+            />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="lname">Last Name</label>
+          <div class="control">
+            <input
+              id="lname"
+              class="input"
+              type="text"
+              name="lname"
+              placeholder="Doe"
+            />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="email1">Email</label>
+          <div class="control">
+            <input
+              id="email1"
+              class="input"
+              type="email"
+              name="email"
+              placeholder="john.doe@example.com"
+            />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="role">Role</label>
+          <div class="control">
+            <div class="select">
+              <select name="role" id="role">
+                <option>Select User Role</option>
+                <option value="collab">Collaborator</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="control">
+          <button class="button is-link" type="submit">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- END MAIN SECTION -->
+
+<!-- FOOTER -->
+<%- include('partials/footer'); %>

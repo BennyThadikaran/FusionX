@@ -1,0 +1,32 @@
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p><strong>FusionX</strong> designed and developed by <a href="https://github.com/BennyThadikaran">Benny Thadikaran</a>. The source code is licensed <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPL-3</a>.</p>
+      </div>
+    </footer>
+    <script src="/js/swipe.min.js"></script>
+
+    <!-- IF PRODUCTION | DEVELOPMENT -->
+    <% if (env === "production") { %>
+    <!-- PRODUCTION -->
+    <script src="/js/bundle.min.js" type="module"></script>
+
+    <% if (["admin", "collab"].includes(role)) { %>
+    <script src="/js/admin.min.js" type="module"></script>
+    <script src="/js/purify.min.js" type="module"></script>
+    <% } %>
+    <!-- END IF ADMIN | COLLAB -->
+
+    <% } else { %>
+    <!-- DEVELOPMENT -->
+    <script src="/js/app.js" type="module"></script>
+
+    <% if (["admin", "collab"].includes(role)) { %>
+    <script src="/js/admin.js" type="module"></script>
+    <script src="/js/purify.min.js" type="module"></script>
+    <% } %>
+    <!-- END IF ADMIN | COLLAB -->
+
+    <% } %>
+    <!-- END IF PRODUCTION | DEVELOPMENT -->
+  </body>
+</html>

@@ -1,0 +1,114 @@
+<div class="columns">
+  <section class="column">
+    <h2 class="title is-4 has-text-centered">Review Order</h2>
+    <div class="columns">
+      <div class="column is-half">
+        <article class="message">
+          <div class="message-header">
+            <p>Delivery Address</p>
+          </div>
+          <div class="message-body">
+            <% const shipTo = checkout.shipTo ? checkout.shipTo :
+            checkout.billTo %>
+            <p><%= shipTo.name %></p>
+            <p><%= shipTo.address %></p>
+            <p><%= `${shipTo.region} ${shipTo.postalCode}` %></p>
+            <p><%= shipTo.state %></p>
+          </div>
+        </article>
+      </div>
+
+      <div class="column">
+        <article class="message">
+          <div class="message-header">
+            <p>Billing Address</p>
+          </div>
+          <div class="message-body">
+            <p><%= checkout.billTo.name %></p>
+            <p><%= checkout.billTo.address %></p>
+            <p>
+              <%= `${checkout.billTo.region} ${checkout.billTo.postalCode}` %>
+            </p>
+            <p><%= checkout.billTo.state %></p>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="columns">
+      <div class="column is-three-quarters">
+        <% for (const item of checkout.items) { %>
+        <div class="cart-item">
+          <div class="cart-item-title"><%= item.title %></div>
+          <div class="cart-item-row">
+            <div class="cart-item-image">
+              <img
+                class="cart-item-image"
+                src="https://placehold.co/120x90/<%= item.img %>"
+                alt="<%= item.alt_img %>"
+              />
+            </div>
+            <div><%= item.qty %></div>
+            <div class="cart-item-price currency"><%= item.price %></div>
+            <div
+              id="<%= `${item.sku}-discount` %>"
+              class="cart-item-price currency"
+            >
+              - <%= item.discount || 0 %>
+            </div>
+            <div class="cart-item-total currency"><%= item.total %></div>
+          </div>
+        </div>
+        <% } %>
+      </div>
+
+      <div class="column">
+        <table class="table is-bordered is-fullwidth">
+          <tbody>
+            <tr>
+              <td colspan="2">SubTotal</td>
+              <td class="currency"><%= checkout.subtotal %></td>
+            </tr>
+            <tr>
+              <td colspan="2">Shipping</td>
+              <td class="currency"><%= checkout.shipping %></td>
+            </tr>
+            <tr>
+              <td colspan="2">Shipping Discount</td>
+              <td class="currency">
+                -
+                <span><%= checkout.shippingDiscount %></span>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">Item Discount</td>
+              <td class="currency">
+                -
+                <span><%= checkout.itemDiscount %></span>
+              </td>
+            </tr>
+
+            <tr>
+              <th colspan="2">You Pay</th>
+              <th class="currency"><%= checkout.total %></th>
+            </tr>
+            <tr>
+              <td colspan="3">
+                <div class="control">
+                  <button
+                    class="button is-success is-fullwidth"
+                    data-name="processPayment"
+                  >
+                    Make Payment
+                  </button>
+                </div>
+                <div class="help is-size-6"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+<%- include("payment-mock.ejs") %>

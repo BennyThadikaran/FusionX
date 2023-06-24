@@ -1,0 +1,141 @@
+<!-- HEADER -->
+<%- include('partials/head'); %>
+
+<!-- NAVIGATION -->
+<%- include('partials/nav'); %>
+
+<!-- MAIN SECTION -->
+<div class="section">
+  <div class="columns">
+    <div class="column is-10 is-offset-1">
+      <h1 class="title has-text-centered">Select default billing address</h1>
+      <% if (!addresses.length) { %>
+      <div class="section">
+        <p class="title is-4 has-text-centered">
+          There are no addresses to display.
+        </p>
+      </div>
+      <% } else { %>
+      <!-- START FOR ADDRESSES -->
+      <% for (const add of addresses) { %> <div class="card address <%=
+      add.isDefault ? "address-active" : "" %>" data-id="<%= add._id %>">
+      <header class="card-header has-background-grey-dark">
+        <p class="card-header-title has-text-white-bis"><%= add.name %></p>
+      </header>
+      <div class="card-content has-background-white-bis">
+        <div class="content">
+          <p><%= add.address %></p>
+          <p><%= `${add.region} ${add.postalCode}, ${add.state}` %></p>
+        </div>
+      </div>
+      <footer class="card-footer">
+        <a data-name="setDefaultBilling" class="card-footer-item"
+          ><%= add.isDefault ? "SELECTED" : "SET DEFAULT" %></a
+        >
+        <a data-name="editAddr" class="card-footer-item">EDIT</a>
+      </footer>
+    </div>
+    <% } %>
+    <!-- END FOR ADDRESSES -->
+    <% } %>
+    <!-- END IF ADDRESSES.LENGTH -->
+  </div>
+</div>
+<div class="is-hidden" id="editAddressModal">
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Edit Address</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <form name="editAddr" id="editAddrForm">
+        <div class="field">
+          <label class="label" for="billto-postal-code">Pincode</label>
+          <div class="control">
+            <input
+              class="input"
+              type="text"
+              name="billto-postal-code"
+              id="billto-postal-code"
+              placeholder="Enter Pincode to get Region and
+            State."
+            />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input
+                  class="input"
+                  type="text"
+                  name="billto-region"
+                  placeholder="Region"
+                  readonly
+                />
+              </div>
+            </div>
+            <div class="field">
+              <div class="control">
+                <input
+                  class="input"
+                  type="text"
+                  name="billto-state"
+                  placeholder="State"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="billto-name">Fullname</label>
+          <div class="control">
+            <input
+              class="input"
+              type="text"
+              name="billto-name"
+              id="billto-name"
+              placeholder="Benny Thadikaran"
+            />
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="billto">Address</label>
+          <div class="control">
+            <textarea
+              class="textarea"
+              name="billto-street-address"
+              id="billto"
+              rows="4"
+              placeholder="Delivery Address"
+            ></textarea>
+          </div>
+          <div class="help is-size-6"></div>
+        </div>
+        <input type="hidden" name="csrf" value="<%= csrf %>" />
+        <input type="hidden" name="addrId" />
+      </form>
+    </section>
+    <footer class="modal-card-foot">
+      <button
+        form="editAddrForm"
+        type="submit"
+        name="btn"
+        class="button is-success"
+      >
+        Set Address
+      </button>
+      <button class="button" aria-label="close">Cancel</button>
+    </footer>
+  </div>
+</div>
+<!-- END MAIN SECTION -->
+
+<!-- FOOTER -->
+<%- include('partials/footer'); %>

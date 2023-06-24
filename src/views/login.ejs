@@ -1,0 +1,73 @@
+<!-- header -->
+<%- include('partials/head') %>
+
+<!-- navigation -->
+<%- include('partials/nav') %>
+<div class="container">
+  <div class="section is-medium py-0">
+    <h1 class="is-size-2 has-text-centered">Log In</h1>
+
+    <form name="login" method="POST" id="login">
+      <div class="field">
+        <label class="label" for="email1">Email</label>
+        <div class="control">
+          <input
+            id="email1"
+            class="input"
+            type="email"
+            name="email"
+            placeholder="john.doe@example.com"
+          />
+        </div>
+        <div class="help is-size-6"></div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="pwd1">Password</label>
+        <div class="control">
+          <input
+            class="input"
+            type="password"
+            name="pwd"
+            id="pwd1"
+            placeholder="Minimum 10 characters"
+          />
+        </div>
+        <div class="help is-size-6"></div>
+      </div>
+
+      <input type="hidden" name="csrf" value="<%= csrf %>" />
+
+      <div class="field">
+        <div class="control">
+          <label for="showPwd" class="checkbox">
+            <input
+              type="checkbox"
+              name="showPwd"
+              id="showPwd"
+              autocomplete="off"
+            />
+            Show Password
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="control">
+          <button
+            class="button is-link"
+            type="submit"
+            formnovalidate="formnovalidate"
+            name="btn"
+          >
+            Submit
+          </button>
+        </div>
+        <div class="help is-size-6"></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- footer -->
+<%- include('partials/footer'); %>

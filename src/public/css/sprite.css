@@ -1,0 +1,71 @@
+.i-cart {
+  background: url("/images/sprite-53801210.svg") 58.8235294117647% 0 no-repeat;
+}
+
+.i-cart-dims {
+  width: 27px;
+  height: 24px;
+}
+
+.i-filter {
+  background: url("/images/sprite-53801210.svg") 50% 100% no-repeat;
+}
+
+.i-filter-dims {
+  width: 24px;
+  height: 24px;
+}
+
+.i-home {
+  background: url("/images/sprite-53801210.svg") 0 100% no-repeat;
+}
+
+.i-home-dims {
+  width: 27px;
+  height: 24px;
+}
+
+.i-truck {
+  background: url("/images/sprite-53801210.svg") 0 0 no-repeat;
+}
+
+.i-truck-dims {
+  width: 30px;
+  height: 24px;
+}
+
+.i-user {
+  background: url("/images/sprite-53801210.svg") 100% 0 no-repeat;
+}
+
+.i-user-dims {
+  width: 21px;
+  height: 24px;
+}
+
+.i-star {
+  background: url("/images/star-7c50e19e.svg") 100% 0 no-repeat;
+}
+
+.i-star-dims {
+  width: 18px;
+  height: 16px;
+}
+
+.i-star-empty {
+  background: url("/images/star-7c50e19e.svg") 0 100% no-repeat;
+}
+
+.i-star-empty-dims {
+  width: 18px;
+  height: 16px;
+}
+
+.i-star-half {
+  background: url("/images/star-7c50e19e.svg") 0 0 no-repeat;
+}
+
+.i-star-half-dims {
+  width: 20px;
+  height: 16px;
+}

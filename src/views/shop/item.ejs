@@ -1,0 +1,121 @@
+<%- include('../partials/head'); %> <%- include('../partials/nav'); %>
+
+<section class="columns">
+  <div class="column is-6">
+    <div class="columns">
+      <div id="item-img-nav" class="column is-2 item-img-nav">
+        <% item.images.forEach((img, idx) => { %>
+        <img
+          tabindex="0"
+          data-index="<%= idx %>"
+          data-name="swipe"
+          src="<%= imgUrl %>/600x450/<%= img[0] %>"
+          alt="<%= img[1] %>"
+          class="<%= idx === 0 ? 'is-active' : '' %>"
+        />
+        <% }) %>
+      </div>
+
+      <div id="slider" class="column item-img-main swipe">
+        <div class="swipe-wrap">
+          <% for (const [img, altText] of item.images) { %>
+          <div>
+            <img src="<%= imgUrl %>/600x450/<%= img %>" alt="<%= altText %>" />
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="column is-5 item-detail">
+    <%- include('../partials/breadcrumbs'); %>
+    <h1 id="item-title" class="title is-4"><%= item.title %></h1>
+    <div class="subtitle is-6">
+      <span class="i-icon">
+        <i class="i-star i-star-dims"></i>
+        <i class="i-star i-star-dims"></i>
+        <i class="i-star i-star-dims"></i>
+        <i class="i-star-half i-star-half-dims"></i>
+        <i class="i-star-empty i-star-dims"></i>
+        <a href="" class="ml-2">17 Reviews</a>
+      </span>
+    </div>
+    <hr class="my-1" />
+    <p class="title is-4">
+      <span class="currency" id="item-price"><%= item.price %></span>
+      <span class="ml-2 is-size-6">
+        You save
+        <span id="item-save" class="has-text-danger currency ml-1"
+          ><%= item.price - item.mrp %></span
+        >
+      </span>
+    </p>
+    <p class="subtitle is-6 has-text-grey">
+      M.R.P&nbsp;:
+      <span id="item-mrp" class="ml-3 currency"><%= item.mrp %></span>
+    </p>
+
+    <form name="cartAdd" method="get">
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label" for="item_qty">Quantity</label>
+        </div>
+        <div class="field-body">
+          <div class="select">
+            <select name="qty" disabled>
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <button
+            name="cartBtn"
+            type="submit"
+            class="button is-link ml-2"
+            disabled
+          >
+            Add to Cart
+          </button>
+        </div>
+      </div>
+      <div id="cartErr" class="help is-size-6"></div>
+
+      <div id="variants_btn"></div>
+    </form>
+  </div>
+</section>
+
+<hr />
+
+<section class="section">
+  <div class="columns">
+    <div class="column is-6">
+      <p class="title is-4">Specifications</p>
+      <table class="table is-fullwidth is-capitalized">
+        <tbody id="item-specs">
+          <% for (const spec of item.specs) { %>
+          <tr>
+            <th><%= spec.k %></th>
+            <td><%= spec.v %></td>
+          </tr>
+          <% } for (const [key, val] of Object.entries(item.other_specs)) { %>
+          <tr>
+            <th><%= key %></th>
+            <td><%= val %></td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+    <div class="column readable">
+      <p class="title is-4">Item Description</p>
+      <div class="content" id="item-info">
+        <div><%- item.info.info %></div>
+      </div>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer'); %>

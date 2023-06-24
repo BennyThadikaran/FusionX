@@ -1,0 +1,527 @@
+/* READABILITY */
+.readable > p {
+  letter-spacing: 0.05rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.readable > p:last-child {
+  margin-bottom: 0;
+}
+
+/* SHOP ITEM PAGE */
+.disabled {
+  cursor: not-allowed !important;
+}
+
+.currency:before {
+  content: "₹ ";
+}
+
+.item-img-nav {
+  display: none;
+}
+
+.item-detail {
+  padding: 1.5rem 3rem 0 3rem;
+}
+
+@media screen and (min-width: 1024px) {
+  .item-img-nav {
+    display: block;
+    padding: 0;
+  }
+
+  .item-img-nav > img {
+    display: block;
+    width: auto;
+    height: calc(353px / 5 - 2px);
+    border: 2px solid transparent;
+    margin: 0 0 0 auto;
+  }
+
+  .item-img-nav > img:first-child {
+    margin-top: 1.5rem;
+  }
+
+  .item-img-nav > .is-active {
+    border-color: DarkSlateGray;
+  }
+
+  .item-img-nav > img:last-child {
+    margin-bottom: 0;
+  }
+
+  .item-detail {
+    overflow-y: scroll;
+  }
+}
+
+@media screen and (min-width: 1216px) {
+  .item-img-nav > img {
+    height: calc(377px / 5 - 2px);
+  }
+}
+
+.checkbox-btn input[type="radio"],
+.checkbox-btn input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-btn span {
+  display: inline-block;
+  padding: 10px;
+  text-transform: uppercase;
+  border: 2px solid LightSlateGray;
+  margin: 0 0.25rem 0.25rem 0;
+  min-width: 3rem;
+  text-align: center;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.checkbox-btn input[type="radio"]:checked + span,
+.checkbox-btn input[type="checkbox"]:checked + span {
+  background-color: #485fc7;
+  color: #fff;
+  border-color: #2160c4;
+}
+
+.num {
+  width: 130px;
+}
+
+.num > span {
+  cursor: pointer;
+}
+
+.num-minus,
+.num-plus {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #f2f2f2;
+  border-radius: 4px;
+  padding: 8px 2px;
+  border: 1px solid #ddd;
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.num-minus {
+  margin-right: 2px;
+}
+
+.num-plus {
+  margin-left: 2px;
+}
+
+.num > input {
+  width: 45px;
+  display: inline-block;
+}
+
+/* END SHOP ITEM PAGE */
+
+/* SHOPPING CART */
+.cart {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-item {
+  padding: 1.5rem 0.5rem;
+  border-bottom: 1px solid #e1e8ee;
+  font-weight: bold;
+}
+
+.cart-item-head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cart-item-title {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.cart-item-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cart-item-price {
+  color: #86939e;
+}
+
+.cart-item-image {
+  width: 120px;
+  height: 90px;
+}
+
+.cart-item-image,
+.cart-item-qty,
+.cart-item-price,
+.cart-item-total {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.cart-summary {
+  float: right;
+  display: flex;
+  justify-content: space-between;
+  width: 28%;
+}
+
+.cart-total {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+@media (min-width: 763px) {
+  .cart-item-title {
+    text-align: left;
+    margin-bottom: 0.5rem;
+  }
+
+  .cart-item-row {
+    justify-content: space-between;
+  }
+
+  .cart-item-image,
+  .cart-item-qty,
+  .cart-item-price,
+  .cart-item-total {
+    width: auto;
+    height: 7rem;
+    margin-bottom: 0;
+    margin-left: 2rem;
+  }
+
+  .cart-item-image {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 550px) {
+  footer.modal-card-foot {
+    display: flex;
+    flex-direction: column;
+  }
+
+  footer.modal-card-foot > * {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  footer.modal-card-foot > .cart-summary {
+    order: -1;
+  }
+}
+
+/* CSS for Swipe js */
+.swipe {
+  overflow: hidden;
+  visibility: hidden;
+  position: relative;
+}
+.swipe-wrap {
+  overflow: hidden;
+  position: relative;
+}
+.swipe-wrap > div {
+  float: left;
+  width: 100%;
+  position: relative;
+}
+
+/* Comments */
+.avatar {
+  display: block;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  line-height: 50px;
+  font-weight: bold;
+  font-size: 1.5rem;
+  background: #414a4c;
+  color: #fff;
+}
+/* END Comments */
+
+/* Modal */
+.modal {
+  position: absolute;
+}
+
+.modal-close {
+  float: right;
+  position: relative;
+  top: -1.25rem;
+  right: -1.25rem;
+  background: #e3e3e3;
+}
+
+.modal-close:after,
+.modal-close:before {
+  background-color: #212121;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+  background-color: rgba(10, 10, 10, 0.3);
+}
+
+.modal-close:hover::before,
+.modal-close:hover::after,
+.modal-close:focus::before,
+.modal-close:focus::after {
+  background-color: #fff;
+}
+/* END Modal */
+
+.centered-block {
+  margin: 0 auto;
+}
+
+.block-btn {
+  display: block;
+  width: 315px;
+  margin: 0 auto;
+}
+
+/* NAVIGATION */
+.navbar-start .navbar-dropdown > a.navbar-item,
+.navbar-end .navbar-dropdown > .navbar-item {
+  padding: 1rem 1.5rem;
+}
+
+/* NAVIGATION - NESTED DROPDOWNS
+ * Reference: https://codepen.io/jenie/pen/mdrzpdG
+ * */
+
+.navbar-submenu > .navbar-submenu-link > .navbar-item {
+  padding: 1rem 3rem 1rem 1.5rem;
+}
+
+.navbar-submenu,
+.navbar-submenu > .navbar-item {
+  display: block;
+}
+
+.navbar-submenu > .navbar-submenu-link .navbar-link::after {
+  transform: rotate(-135deg);
+}
+
+.navbar-submenu > .navbar-submenu-dropdown {
+  height: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: height 200ms;
+}
+
+.navbar-submenu.open > .navbar-submenu-link .navbar-link::after {
+  transform: rotate(-45deg);
+}
+
+.navbar-submenu.open > .navbar-submenu-dropdown {
+  padding: 0.5rem;
+  height: auto;
+}
+
+/* END NAVIGATION - NESTED DROPDOWNS */
+/* END NAVIGATION */
+
+/* default is white font on white background */
+a.button.is-info:focus,
+button.button.is-info:focus {
+  background: #485fc7;
+}
+
+.card-sm {
+  width: 288px;
+  margin: 0.75rem;
+}
+
+.card-sm .title {
+  height: 2.9em;
+  overflow: hidden;
+  padding: 0.75rem;
+}
+
+.post > p {
+  font-size: 1.2rem;
+  line-height: 2rem;
+}
+
+.post > p:not(:last-child) {
+  margin-bottom: 2rem;
+}
+
+.has-error {
+  background-color: #feecf0;
+  color: #cc0f35;
+}
+
+.has-success {
+  background-color: #effaf3;
+  color: #257942;
+}
+
+/* Password strength */
+#pwd-suggestions {
+  display: block;
+  min-height: 70px;
+}
+
+#pwd-suggestions ul {
+  margin: 0;
+}
+
+#pwd-strength {
+  height: 5px;
+  width: 100%;
+  display: block;
+  background-color: #ccc;
+}
+
+#pwd-strength span {
+  display: block;
+  height: 5px;
+  border-radius: 2px;
+  transition: all 500ms ease;
+}
+
+.strength-0 span {
+  background-color: Red;
+  width: 5%;
+}
+.strength-1 span {
+  background-color: OrangeRed;
+  width: 25%;
+}
+.strength-2 span {
+  background-color: Orange;
+  width: 50%;
+}
+.strength-3 span {
+  background-color: #23d160;
+  width: 75%;
+}
+.strength-4 span {
+  background-color: #257942;
+  width: 100%;
+}
+
+/* dsfsga */
+.multistep {
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.multistep-tab {
+  display: none;
+}
+
+.multistep-progress {
+  position: absolute;
+  background: hsl(141, 53%, 31%);
+  height: 5px;
+  width: 0%;
+  top: 50%;
+  left: 0;
+}
+
+.multistep-num {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+}
+
+.multistep-num:before {
+  content: "";
+  background-color: LightGrey;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 5px;
+  width: 100%;
+  z-index: -1;
+}
+
+.multistep-num .step {
+  border: 3px solid LightGrey;
+  border-radius: 100%;
+  width: 28px;
+  height: 28px;
+  line-height: 23px;
+  text-align: center;
+  font-weight: bold;
+  background-color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.multistep-num .step.active {
+  border-color: hsl(141, 53%, 31%);
+  background-color: hsl(141, 53%, 31%);
+  color: #fff;
+}
+
+.address {
+  width: 250px;
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 1rem;
+}
+
+.address .content {
+  min-height: 140px;
+}
+
+.address-active > .card-header {
+  background: #48c78e !important;
+}
+
+.address-active > .card-content {
+  background: #effaf5 !important;
+}
+
+.fade-out {
+  transition: height 0.1s;
+}
+
+/* https://tilomitra.github.io/infinite/ */
+.alertPulse {
+  animation: pulse 0.8s ease-in;
+  animation-iteration-count: 1;
+  opacity: 1;
+}
+
+@keyframes pulse {
+  0% {
+    background: Yellow;
+    opacity: 0.8;
+  }
+  25% {
+    background: Yellow;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
