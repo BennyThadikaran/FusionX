@@ -4,7 +4,7 @@
 
 The Frontend is built on pure vanilla javascript and [Bulma css framework](https://bulma.io/).
 
-Project deployed live at: **[https://pear-frightened-vulture.cyclic.app/](https://worrisome-scrubs-toad.cyclic.app/)**
+Project deployed live at: **https://worrisome-scrubs-toad.cyclic.app/**
 
 **Admin User login:**
 
