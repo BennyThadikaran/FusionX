@@ -1,0 +1,12 @@
+[submodule "src/public/js/ajax"]
+	path = src/public/js/ajax
+	url = https://github.com/BennyThadikaran/ajax.git
+[submodule "src/public/js/validate.js"]
+	path = src/public/js/validate.js
+	url = https://github.com/BennyThadikaran/validate.js.git
+[submodule "src/public/js/node.js"]
+	path = src/public/js/node.js
+	url = https://github.com/BennyThadikaran/node.js.git
+[submodule "src/public/js/cache.js"]
+	path = src/public/js/cache.js
+	url = https://github.com/BennyThadikaran/cache.js.git
