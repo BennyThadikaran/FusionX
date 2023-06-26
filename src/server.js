@@ -35,9 +35,12 @@ app.set("view engine", "ejs");
 
 app.disable("x-powered-by"); // remove unnecessary header
 
-// setup logging
-// const logger = pino(pino.transport(config.pino));
-const logger = pino(pino.destination());
+/* Setup logging
+ * pino(pino.destination()) - logs to stdout (runs in main thread)
+ * pino(pino.transport(config.pinoFile)) - logs to logs/error.log
+ * pino(pino.transport(config.pinoMongo)) - logs to mongodb
+ * */
+const logger = pino(pino.transport(config.pinoMongo));
 app.set("log", logger);
 
 // Mongodb and sessions
@@ -45,7 +48,7 @@ const client = new MongoClient(process.env.MONGO_CONN_STRING, config.mongo);
 
 (async () => {
   await client.connect();
-  app.set("db", client.db("fusionx"));
+  app.set("db", client.db(config.dbName));
   app.set("dbClient", client);
   const port = process.env.PORT || 3000;
 
@@ -69,7 +72,7 @@ export const blogListLimit = ${config.blogListLimit};`
 // middleware
 config.session.store = MongoStore.create({
   client: client,
-  dbName: "fusionx",
+  dbName: config.dbName,
   crypto: { secret: process.env.STORE_SECRET },
 });
 
