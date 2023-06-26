@@ -1,6 +1,15 @@
 const { join } = require("path");
 
+const mongoOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+};
+const dbName = "fusionx";
+
 module.exports = {
+  // mongodb config
+  mongoOptions,
+  dbName,
   registeredState: "MAHARASHTRA", // ** IMP ** State from which goods are supplied
   paymentProvider: "FakePay", // Payment gateway provider name
   pwdInputs: [], // inputs passed to zxcvbn eg. site name or site specific tags
@@ -59,19 +68,26 @@ module.exports = {
     },
   },
 
-  // mongodb config
-  mongo: {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  },
+  /* Pino.js logging */
 
-  // pino.js logging
-  pino: {
-    target: "pino/file",
+  // pinoFile: {
+  //   target: "pino/file",
+  //   level: "warn",
+  //   options: {
+  //     destination: join(__dirname, "logs", "error.log"),
+  //     mkdir: true,
+  //     sync: false,
+  //   },
+  // },
+
+  pinoMongo: {
+    target: "pino-mongodb",
+    level: "warn",
     options: {
-      destination: join(__dirname, "logs", "error.log"),
-      mkdir: true,
-      sync: false,
+      uri: process.env.MONGO_CONN_STRING,
+      database: dbName,
+      collection: "logs",
+      mongoOptions,
     },
   },
 };
