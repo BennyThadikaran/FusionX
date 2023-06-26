@@ -6,7 +6,7 @@ The Frontend is built on pure vanilla javascript and [Bulma css framework](https
 
 App deployed live at: **https://worrisome-scrubs-toad.cyclic.app/**
 
-### [Usage instructions - Wiki page](https://github.com/BennyThadikaran/FusionX/wiki/Usage)
+### Usage and Login - [See the Wiki Page](https://github.com/BennyThadikaran/FusionX/wiki)
 
 **The project consists of:**
 
