@@ -725,7 +725,7 @@ async function syncCartItems(db, userId, sessionCart) {
   // get cart items from collection
   const dbCart = await getCartItems(db, userId);
 
-  if (!dbCart) return false;
+  if (dbCart === null) return false;
 
   let itemsToInsert = [];
 
@@ -739,9 +739,7 @@ async function syncCartItems(db, userId, sessionCart) {
         if (dbItem.qty === item.qty) continue;
 
         // if items exists and qty is different, update the qty
-        [err, result] = await updateCartItem(db, userId, item.sku, item.qty);
-
-        if (err) return false;
+        await updateCartItem(db, userId, item.sku, item.qty);
         continue;
       }
       // if item does not exist we add it together
@@ -807,7 +805,7 @@ async function getCartItems(db, userId) {
  * @return {Promise.Array} [err, data]
  */
 async function getCartCount(db, userId) {
-  const [result] = await to(
+  const [, result] = await to(
     db.collection("cart").countDocuments({ userId: new ObjectId(userId) }),
     logger
   );
