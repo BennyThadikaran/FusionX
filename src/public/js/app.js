@@ -516,10 +516,17 @@ async function getPostalDetails(el) {
 
   if (code === 400) return addToNextEl(el, "Invalid Pincode");
 
-  if (res.error) return addToNextEl(el, "Pincode does not exist.", false);
+  if (res.status === "error") {
+    if (res.message === "api error") {
+      addToNextEl(el, "Error retrieving data. Please retry", false);
+      el.value = "";
+      return;
+    }
+    return addToNextEl(el, "Pincode does not exist.", false);
+  }
 
   emptyNextEl(el);
-  const { District, State } = res;
+  const { District, State } = res.message;
   el.form[region].value = District;
   el.form[state].value = State;
 }

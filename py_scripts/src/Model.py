@@ -1,17 +1,18 @@
 from pymongo import MongoClient
+from pathlib import Path
 
 
 class Model:
 
-    def __init__(self, env_path):
-        self.con_string = self.getConnectionString(env_path)
+    def __init__(self, env_path: Path):
+        self.con_string = self._getConnectionString(env_path)
 
     def connect(self):
         self.con = MongoClient(self.con_string)
-        self.db = self.con.fusiony
+        self.db = self.con.fusionx
 
     @staticmethod
-    def getConnectionString(env_path):
+    def _getConnectionString(env_path: Path):
         if not env_path.exists():
             raise FileNotFoundError(env_path)
 
