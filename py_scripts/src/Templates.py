@@ -3,6 +3,8 @@ from itertools import islice, chain
 from bson.objectid import ObjectId
 from string import ascii_lowercase, digits
 from random import choices
+from pathlib import Path
+from Model import Model
 
 
 class BaseTemplate:
@@ -10,27 +12,27 @@ class BaseTemplate:
     A base class for all product templates
 
     Child classes must implement:
-    type_columns [Required Attribute, Tuple(Strings)]:
-        columns names for product variant attributes like size, color etc
+    type_columns: Tuple(str, ...) - Required Attribute
+        columns names for product variant options like size, color etc
 
-    added_specs [Optional Attribute, Tuple(Strings)]:
+    added_specs: Tuple(str, ...) - Optional Attribute
         Any additional column names to add to spec_columns
 
-    other_added_specs [Optional Attribute, Tuple(Strings)]:
+    added_other_specs: Tuple(str, ...) - Optional Attribute
         Any additional column names to add to other_specs_columns
 
-    added_validations [Optional method]:
+    added_validations: callable - Optional method
         Any additional validations to be run on the file
     '''
 
     parent_columns = ('listing_type', 'brand', 'title',
-                      'category_code', 'href', 'image', 'gst')
+                      'category_code', 'href', 'gst')
 
     child_columns = ('price', 'mrp', 'qty', 'image1', 'image2', 'image3',
                      'image4', 'image5', 'description')
 
     # Attributes used for filtering products
-    spec_columns = ('brand', 'origin', 'material', 'basecolor')
+    spec_columns = ('origin', 'material', 'basecolor')
 
     # attributes that will not be used in filters
     other_spec_columns = ('weight', 'dimensions')
@@ -40,16 +42,18 @@ class BaseTemplate:
     type_columns = None
     added_validations = None
     added_specs = None
-    other_added_specs = None
+    added_other_specs = None
 
-    def __init__(self, file, db):
-        if not file.is_file():
-            exit(f'{file} does not exist')
+    def __init__(self, file: Path, db: Model):
+        self.file_exists = file.is_file()
 
         self.file = file
         self.db = db
 
     def __enter__(self):
+        if not self.file_exists:
+            return self
+
         self.csv = self.file.open()
         self.reader = DictReader(self.csv, dialect='excel-tab')
         self.length = len(self.reader.fieldnames)
@@ -58,17 +62,19 @@ class BaseTemplate:
         return self
 
     def __exit__(self, exc_type, exc_value, exc_trace):
-        self.csv.close()
-        self.db.con.close()
+        if self.file_exists:
+            self.csv.close()
+            self.db.con.close()
 
         if exc_type:
             exit(f'{exc_type}: {self.file.name}: {exc_value}: {exc_trace}')
         return True
 
-    def generate_code(self):
+    def _generate_code(self):
+        '''Generates a 6 digit unique product code'''
         return ''.join(choices(self.alpha_num, k=6))
 
-    def validate_file(self):
+    def _validate_file(self):
         '''Checks if:
         File contains all columns as expected
         No blank row or empty values in parent and child columns
@@ -77,6 +83,9 @@ class BaseTemplate:
         On child rows, price <= MRP
         Run the added_validations method defined on the child class
         '''
+
+        if not self.file_exists:
+            raise FileNotFoundError(f'{self.file} does not exist')
 
         columns = self.reader.fieldnames
 
@@ -132,8 +141,6 @@ class BaseTemplate:
                                     self.spec_columns,
                                     self.other_spec_columns,
                                     self.type_columns):
-                    if column == 'brand':
-                        continue
 
                     if column == 'gst' and not has_gst_parent and row[column] == '':
                         raise ValueError(
@@ -161,7 +168,7 @@ class BaseTemplate:
             self.added_validations()
             self.csv.seek(0)
 
-    def get_types(self, row):
+    def _get_types(self, row: dict):
         '''Returns a list of Dictionaries containing product types
         [{'k': 'Size', 'v': 'XL'}]
         '''
@@ -177,7 +184,7 @@ class BaseTemplate:
         self.option_title = title.strip(', ')
         return options
 
-    def get_specs(self, row):
+    def _get_specs(self, row: dict):
         '''Returns a list of Dictionaries containing product specs
         [{'k': 'material', 'v': 'Nylon'}]
         '''
@@ -186,25 +193,21 @@ class BaseTemplate:
         if type(self.added_specs) is tuple:
             self.spec_columns += self.added_specs
 
-        specs = []
+        specs = [{'k': 'brand', 'v': self.brand}]
 
         for spec in self.spec_columns:
-            if spec == 'brand':
-                specs.append({'k': spec, 'v': self.brand})
-                continue
-
             specs.append({'k': spec, 'v': row[spec]})
 
         return specs
 
-    def get_other_specs(self, row):
+    def _get_other_specs(self, row: dict):
         '''Returns a Dictionary containing mandatory product specs
         {'material': 'Nylon'}
         '''
 
         # additional prouduct specific specs are defined on child classes
-        if type(self.other_added_specs) is tuple:
-            self.other_spec_columns += self.other_added_specs
+        if type(self.added_other_specs) is tuple:
+            self.other_spec_columns += self.added_other_specs
 
         specs = {}
 
@@ -213,8 +216,32 @@ class BaseTemplate:
 
         return specs
 
+    def generate_file(self):
+        """Generates a template file with the filename supplied in the contructor"""
+        if not self.type_columns:
+            raise NotImplementedError(
+                f'{self.__class__.__name__} must have a type_columns attribute')
+
+        columns = self.parent_columns + self.type_columns + self.spec_columns
+
+        if self.added_specs:
+            columns += self.added_specs
+
+        columns += self.other_spec_columns
+
+        if self.added_other_specs:
+            columns += self.added_other_specs
+
+        columns += self.child_columns
+
+        with self.file.open("w") as f:
+            f.write('\t'.join(columns) + '\nMAIN\nSUB\n')
+
     def run(self):
-        self.validate_file()
+        '''Run validations on the file and if error free,
+        add products to the database
+        '''
+        self._validate_file()
 
         # all well connect to Database
         self.db.connect()
@@ -232,7 +259,7 @@ class BaseTemplate:
             if row['listing_type'] == 'MAIN':
                 child_count = 1
 
-                product = self.compile_product(row)
+                product = self._compile_product(row)
 
                 res = self.db.db.products.insert_one(product)
 
@@ -242,7 +269,7 @@ class BaseTemplate:
             if row['listing_type'] == 'SUB':
                 code = product['product_code']
 
-                item = self.compile_variant(row, code, child_count)
+                item = self._compile_variant(row, code, child_count)
 
                 # Add the variant description to variant_info collection
                 info_result = self.db.db.variant_info.insert_one(
@@ -265,7 +292,7 @@ class BaseTemplate:
 
         print(self.file.name, 'Done')
 
-    def compile_product(self, row):
+    def _compile_product(self, row: dict):
         'Returns a Dictionary representing the product'
 
         self.brand = row['brand']
@@ -273,29 +300,27 @@ class BaseTemplate:
         self.href = row['href'].lower().replace(' ', '-')
         self.gst = int(row['gst']) if row['gst'] else None
 
-        product_code = row['category_code'] + self.generate_code()
+        product_code = row['category_code'] + self._generate_code()
 
         while product_code in self.codes:
-            product_code = row['category_code'] + self.generate_code()
+            product_code = row['category_code'] + self._generate_code()
 
         # href links to first child
         link = f'{product_code}001/{self.href}'
-        img = row['image'].split(',')
 
         return {
             'title': self.title,
             'product_code': product_code,
             'href': link.lower().replace(' ', '-'),
-            'image': [img[0].strip(), img[1].strip()],
         }
 
-    def compile_variant(self, row, category_code, child_count):
+    def _compile_variant(self, row: dict, category_code: str, child_count: int):
         'Returns a dictionary describing the product variant'
 
         # get the variants and set the variant_title
         # child_count is 0 padded upto 3 chars - 001 002 etc
         sku = f'{category_code}{child_count:03d}'
-        item_types = self.get_types(row)
+        item_types = self._get_types(row)
 
         item = {
             'sku': sku,
@@ -306,8 +331,8 @@ class BaseTemplate:
             'gst': int(self.gst) if self.gst else int(row['gst']),
             'qty': int(row['qty']),
             'type': item_types,
-            'specs': self.get_specs(row),
-            'other_specs': self.get_other_specs(row),
+            'specs': self._get_specs(row),
+            'other_specs': self._get_other_specs(row),
             'images': [],
             'z_index': 1 if child_count == 1 else 0.5
         }
