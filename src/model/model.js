@@ -1534,19 +1534,19 @@ async function getPostalData(db, code) {
   const collection = db.collection("pincodes");
   let [err, result] = await to(collection.findOne({ Pincode: code }), logger);
 
-  if (!err) {
+  if (!err && result) {
     cache.set(code, result);
-    return result;
+    return { status: "success", message: result };
   }
 
   [err, result] = await to(fetchPostalData(code), logger);
 
   if (err) return result;
 
-  if ("success" in result) {
-    cache.set(code, result.success, 24 * 60 * 60);
-    collection.insertOne(result.success);
-    return result.success;
+  if (result.status === "success") {
+    cache.set(code, result.message, 24 * 60 * 60);
+    collection.insertOne(result.message);
+    return result;
   }
 
   return result;
