@@ -1556,7 +1556,7 @@ async function getPostalData(db, code) {
  * @param {Object|null} [projection=null]
  */
 async function getUserByEmail(db, email, projection = null) {
-  if (!projection) projection = { hash: 1, role: 1 };
+  if (!projection) projection = { hash: 1, role: 1, fname: 1, lname: 1 };
 
   const [, result] = await to(
     db.collection("users").findOne({ email }, { projection }),

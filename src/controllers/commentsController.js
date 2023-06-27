@@ -125,7 +125,7 @@ const getComments = async (req, res) => {
     comments: comments,
     csrf: req.session.csrf,
     id: req.session.userId,
-    name: req.session?.logged
+    name: req.session.logged
       ? `${req.session.fname} ${req.session.lname}`
       : null,
     logged: Boolean(req.session.logged),
