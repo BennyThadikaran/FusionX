@@ -64,7 +64,8 @@ const client = new MongoClient(process.env.MONGO_CONN_STRING, config.mongo);
     join(__dirname, "public", "js", "variables.js"),
     `export const imgUrl = "${config.imgUrl}";
 export const shopListLimit = ${config.shopListLimit};
-export const blogListLimit = ${config.blogListLimit};`
+export const blogListLimit = ${config.blogListLimit};
+export const commentListLimit = ${config.commentListLimit};`
   );
   // END DEV CODE
 })().catch((err) => logger.error(err));
