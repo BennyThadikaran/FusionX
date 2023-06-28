@@ -2,12 +2,24 @@
 const { join } = require("path");
 const striptags = require("striptags");
 const validate = require(join(__dirname, "..", "services", "validate.js"));
+const cache = require(join(__dirname, "..", "model", "cache"));
 const { addBlogComment, editBlogComment, getBlogComments } = require(join(
   __dirname,
   "..",
   "model",
   "model"
 ));
+
+const errResponse = "An error occured. Please try again.";
+
+/**
+ * @param {String} postId
+ */
+function clearCommentCache(postId) {
+  for (const key of cache.keys()) {
+    if (key.startsWith(`blogComments_${postId}`)) cache.del(key);
+  }
+}
 
 const postComment = async (req, res) => {
   if (!req.session.logged) return res.sendStatus(401);
@@ -24,6 +36,13 @@ const postComment = async (req, res) => {
   const replyName = req.body.replyName;
   const name = `${req.session.fname} ${req.session.lname}`;
 
+  if (
+    (replyId && typeof replyId !== "string") ||
+    (replyName && typeof replyName !== "string")
+  ) {
+    return res.sendStatus(400);
+  }
+
   const isValid = validate.string(commentText, {
     name: "Comment",
     max: 200,
@@ -35,7 +54,7 @@ const postComment = async (req, res) => {
   }
 
   if (Object.keys(req.errors).length > 0) {
-    return res.json({ error: req.errors });
+    return res.json({ status: "error", message: req.errors });
   }
 
   const db = req.app.get("db");
@@ -49,28 +68,37 @@ const postComment = async (req, res) => {
     replyName
   );
 
-  if (result.acknowledged) {
+  if (result.insertedId) {
+    clearCommentCache(req.params.postId);
+
     return res.json({
-      _id: result.insertedId,
-      name,
-      commentText,
-      replied: {
-        id: replyId,
-        name: replyName,
+      status: "success",
+      message: {
+        _id: result.insertedId,
+        name,
+        commentText,
+        replied: {
+          id: replyId,
+          name: replyName,
+        },
+        text: "Comment added!",
       },
-      success: "Comment added!",
     });
   }
 
-  return res.json({
-    error: { message: "An error occured. Please try again." },
-  });
+  return res.json({ status: "error", message: errResponse });
 };
 
 const editComment = async (req, res) => {
   if (!req.session.logged) return res.sendStatus(401);
 
-  if (!req.xhr || typeof req.body.commentText !== "string") {
+  if (
+    !req.xhr ||
+    !req.body.commentText ||
+    typeof req.body.commentText !== "string" ||
+    !req.body.postId ||
+    typeof req.body.postId !== "string"
+  ) {
     return res.sendStatus(400);
   }
 
@@ -78,34 +106,37 @@ const editComment = async (req, res) => {
 
   const commentText = req.body.commentText.trim();
 
-  const [isValid, error] = validate.string(commentText, {
+  const isValid = validate.string(commentText, {
     name: "Comment",
     max: 200,
   });
 
-  if (!isValid) req.errors.commentText = error;
+  if (!isValid) {
+    req.errors.commentText = validate.log["commentText"];
+    validate.clear();
+  }
 
   if (Object.keys(req.errors).length > 0) {
-    return res.json({ error: req.errors });
+    return res.json({ status: "error", message: req.errors });
   }
 
   const result = await editBlogComment(
     req.app.get("db"),
-    req.param.commentId,
+    req.params.commentId,
     req.session.userId,
     commentText
   );
 
-  if (result.acknowledged && result.modifiedCount === 1) {
+  if (result.modifiedCount === 1) {
+    clearCommentCache(req.body.postId);
+
     return res.json({
-      commentText: commentText,
-      success: "Comment edited!",
+      status: "success",
+      message: { commentText: commentText },
     });
   }
 
-  return res.json({
-    error: { message: "An error occured. Please try again." },
-  });
+  return res.json({ status: "error", message: errResponse });
 };
 
 const getComments = async (req, res) => {
@@ -121,14 +152,19 @@ const getComments = async (req, res) => {
     req.app.locals.commentListLimit
   );
 
+  if (comments === null) {
+    return res.json({ status: "error", message: errResponse });
+  }
+
   return res.json({
-    comments: comments,
-    csrf: req.session.csrf,
-    id: req.session.userId,
-    name: req.session.logged
-      ? `${req.session.fname} ${req.session.lname}`
-      : null,
-    logged: Boolean(req.session.logged),
+    status: "success",
+    message: {
+      comments: comments,
+      csrf: req.session.csrf,
+      id: req.session.userId,
+      name: `${req.session.fname} ${req.session.lname}`,
+      logged: Boolean(req.session.logged),
+    },
   });
 };
 
