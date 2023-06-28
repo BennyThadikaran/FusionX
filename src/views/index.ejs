@@ -30,9 +30,13 @@
       </div>
       <div class="card-content px-1">
         <div class="media">
-          <div class="media-content ">
+          <div class="media-content">
             <p class="title is-5"><%= product.title %></p>
-            <p class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"><%= product.price %></p>
+            <p
+              class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"
+            >
+              <%= product.price %>
+            </p>
           </div>
         </div>
       </div>
@@ -58,9 +62,13 @@
       </div>
       <div class="card-content px-1">
         <div class="media">
-          <div class="media-content ">
+          <div class="media-content">
             <p class="title is-5"><%= product.title %></p>
-            <p class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"><%= product.price %></p>
+            <p
+              class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"
+            >
+              <%= product.price %>
+            </p>
           </div>
         </div>
       </div>
@@ -86,9 +94,13 @@
       </div>
       <div class="card-content px-1">
         <div class="media">
-          <div class="media-content ">
+          <div class="media-content">
             <p class="title is-5"><%= product.title %></p>
-            <p class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"><%= product.price %></p>
+            <p
+              class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"
+            >
+              <%= product.price %>
+            </p>
           </div>
         </div>
       </div>
@@ -103,9 +115,13 @@
     <% for (const post of posts) { %>
     <a href="/blog/<%= post.href %>" class="box is-clearfix">
       <h1 class="title"><%= post.title %></h1>
-      <h2 class="subtitle"><%= post.description %></h1>
+      <h2 class="subtitle"><%= post.description %></h2>
       <p class="is-6 has-text-grey">By <%= post.author %></p>
-      <time class="is-6 has-text-grey is-pulled-right" datetime="<%= post.mod_dt.toJSON() %>"><%= post.mod_dt.toDateString() %></time>
+      <time
+        class="is-6 has-text-grey is-pulled-right"
+        datetime="<%= post.mod_dt.toJSON() %>"
+        ><%= post.mod_dt.toDateString() %></time
+      >
       <div class="tags">
         <% for (const tag of post.tags) { %>
         <span class="tag is-dark"><%= tag %></span>

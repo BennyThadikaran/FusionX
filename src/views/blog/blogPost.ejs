@@ -26,7 +26,10 @@
           <time datetime="<%= dt.toISOString() %>"
             ><%= dt.toDateString() %></time
           >
-          by <a href="/blog?author=<%= post.author %>"><%= post.author %></a>
+          by
+          <a href="/blog?author=<%= encodeURIComponent(post.author) %>"
+            ><%= post.author %></a
+          >
         </span>
         <div class="tags mt-4">
           <% for (const tag of post.tags) { %>

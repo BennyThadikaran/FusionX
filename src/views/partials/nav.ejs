@@ -1,6 +1,6 @@
 <% const active = 'has-background-link has-text-white' %>
 
-<nav class="navbar" role="navigation" aria-label="main navigation">
+<nav class="navbar" aria-label="main navigation">
   <div class="navbar-brand">
     <a class="navbar-item" href="/">
       <img src="/images/logo.svg" alt="Home" width="109" height="28" />
@@ -31,14 +31,18 @@
           <!-- MENS TOP LEVEL -->
           <div class="navbar-submenu">
             <a
-              aria-controls="dropdown-menu"
+              aria-controls="mx-dropdown-menu"
               class="navbar-submenu-link"
               data-name="navbar"
             >
               <div class="navbar-item navbar-link">Mens</div>
             </a>
             <!-- MENS SUBMENU -->
-            <div class="navbar-submenu-dropdown" role="menu">
+            <div
+              class="navbar-submenu-dropdown"
+              role="menu"
+              id="mx-dropdown-menu"
+            >
               <a href="/shop?category=camxts" class="navbar-item">T Shirts</a>
               <a href="/shop?category=camxho" class="navbar-item">Hoodies</a>
               <a href="/shop?category=camxsh" class="navbar-item">Shorts</a>
@@ -56,14 +60,18 @@
           <!-- WOMENS TOP LEVEL -->
           <div class="navbar-submenu">
             <a
-              aria-controls="dropdown-menu"
+              aria-controls="wx-dropdown-menu"
               class="navbar-submenu-link"
               data-name="navbar"
             >
               <div class="navbar-item navbar-link">Womens</div>
             </a>
             <!-- WOMENS SUBMENU -->
-            <div class="navbar-submenu-dropdown" role="menu">
+            <div
+              class="navbar-submenu-dropdown"
+              role="menu"
+              id="wx-dropdown-menu"
+            >
               <a href="/shop?category=cawxts" class="navbar-item">T Shirts</a>
               <a href="/shop?category=cawxsh" class="navbar-item">Shorts</a>
               <a href="/shop?category=cawxtp" class="navbar-item"
@@ -83,14 +91,18 @@
           <!-- EXERCISE TOP LEVEL -->
           <div class="navbar-submenu">
             <a
-              aria-controls="dropdown-menu"
+              aria-controls="ef-dropdown-menu"
               class="navbar-submenu-link"
               data-name="navbar"
             >
               <div class="navbar-item navbar-link">Exercise & Fitness</div>
             </a>
             <!-- EXERCISE SUBMENU -->
-            <div class="navbar-submenu-dropdown" role="menu">
+            <div
+              class="navbar-submenu-dropdown"
+              role="menu"
+              id="ef-dropdown-menu"
+            >
               <a href="/shop?category=efacfr" class="navbar-item"
                 >Foam Rollers</a
               >

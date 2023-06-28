@@ -23,26 +23,29 @@
         <p>Order by&nbsp;</p>
 
         <label class="radio">
-          <input type="radio" name="sortPosts" value="-1" <%= sort === -1 ? 'checked' : '' %>>
-          Latest
+          <input type="radio" name="sortPosts" value="-1" <%= sort === -1 ?
+          'checked' : '' %>> Latest
         </label>
 
         <label class="radio">
-          <input type="radio" name="sortPosts" value="1" <%= sort === 1 ? 'checked' : '' %>>
-          Oldest
+          <input type="radio" name="sortPosts" value="1" <%= sort === 1 ?
+          'checked' : '' %>> Oldest
         </label>
       </div>
       <!-- END BLOG FILTER -->
-
 
       <div id="posts-content">
         <!-- START FOR POSTS -->
         <% for (const post of posts) { %>
         <a href="/blog/<%= post.href %>" class="box is-clearfix">
           <h1 class="title"><%= post.title %></h1>
-          <h2 class="subtitle"><%= post.description %></h1>
+          <h2 class="subtitle"><%= post.description %></h2>
           <p class="is-6 has-text-grey">By <%= post.author %></p>
-          <time class="is-6 has-text-grey is-pulled-right" datetime="<%= post.mod_dt.toISOString() %>"><%= post.mod_dt.toDateString() %></time>
+          <time
+            class="is-6 has-text-grey is-pulled-right"
+            datetime="<%= post.mod_dt.toISOString() %>"
+            ><%= post.mod_dt.toDateString() %></time
+          >
           <div class="tags">
             <% for (const tag of post.tags) { %>
             <span class="tag is-dark"><%= tag %></span>
@@ -53,17 +56,20 @@
         <!-- END FOR POSTS -->
       </div>
 
-
       <!-- LOAD MORE BUTTON -->
       <div class="has-text-centered mt-6">
-        <button class="button is-info is-medium" data-id="<%= posts.at(-1)._id %>" data-name="loadMore">Load More</button>
+        <button
+          class="button is-info is-medium"
+          data-id="<%= posts.at(-1)._id %>"
+          data-name="loadMore"
+        >
+          Load More
+        </button>
       </div>
       <% } %>
       <!-- END IF POSTS.LENGTH -->
-
     </div>
     <!-- END COLUMN -->
-
   </div>
 </section>
 
