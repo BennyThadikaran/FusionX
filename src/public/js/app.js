@@ -1360,6 +1360,7 @@ const eventHandler = (function () {
     offer: applyActiveOffer,
     setDefaultBilling: setDefaultBillingAddress,
     editAddr: showEditAddressModal,
+    commentLoadMore: (el) => comment.get(el.dataset.id),
     loadMore,
     selectAddress,
     processPayment,

@@ -1,3 +1,4 @@
+import { commentListLimit } from "./variables.js";
 import { addToNextEl } from "./Utils.js";
 import validate from "./validate.js/src/validate.js";
 import ajax from "./ajax/src/ajax.js";
@@ -265,34 +266,30 @@ const comment = (function () {
    * @param {Array.<Object>} comments array of comment objects
    * @param {String} userId id of logged user
    * @param {Boolean} isLogged is the user logged?
+   * @return {DocumentFragment}
    */
-  async function generateCommentList(comments, userId, isLogged) {
-    const wrapper = document.getElementById("comment");
+  function generateCommentList(comments, userId, isLogged) {
     const frag = document.createDocumentFragment();
-
-    if (!comments.length) {
-      const p = node.create(
-        "p",
-        { class: "m-3 has-text-weight-bold has-text-centered" },
-        "Be the first to comment."
-      );
-
-      wrapper.appendChild(p);
-    }
 
     for (const msg of comments) {
       msg.editable = userId === msg.userId;
       frag.appendChild(generateComment(msg, isLogged));
     }
-    wrapper.appendChild(frag);
+    return frag;
   }
 
   /**
    * Fetch comments from the server
+   * @param {String} [commentId = null] used to paginate more comments
    */
-  async function get() {
+  async function get(commentId = null) {
     const wrapper = document.getElementById("comment-form");
-    const [code, msg] = await ajax.get(`/blog/comments/${wrapper.dataset.id}`);
+    const commentWrapper = document.getElementById("comment");
+    let url = `/blog/comments/${wrapper.dataset.id}`;
+
+    if (commentId) url += `?id=${commentId}`;
+
+    const [code, msg] = await ajax.get(url);
 
     if (code !== 200 || msg.status === "error") {
       const el = document.getElementById("comment-form");
@@ -301,11 +298,41 @@ const comment = (function () {
       return;
     }
 
-    if (msg.status === "success") {
-      const { csrf, name, logged, id, comments } = msg.message;
+    const { csrf, name, logged, id, comments } = msg.message;
+
+    if (!commentId) {
       await generateForm(csrf, name, logged);
-      await generateCommentList(comments, id, logged);
+
+      if (!comments.length) {
+        const p = node.create(
+          "p",
+          { class: "m-3 has-text-weight-bold has-text-centered" },
+          "Be the first to comment."
+        );
+
+        commentWrapper.appendChild(p);
+        return;
+      }
     }
+
+    const frag = generateCommentList(comments, id, logged);
+    commentWrapper.appendChild(frag);
+
+    if (comments.length < commentListLimit) return;
+
+    const divBtn = node.create("div", { class: "has-text-centered mt-6" });
+    const btn = node.create(
+      "button",
+      {
+        class: "button is-info is-medium",
+        "data-id": comments.at(-1)._id,
+        "data-name": "commentLoadMore",
+      },
+      "Load More"
+    );
+
+    divBtn.appendChild(btn);
+    commentWrapper.parentNode.appendChild(divBtn);
   }
 
   /**
@@ -327,6 +354,7 @@ const comment = (function () {
   async function process(form) {
     form.btn.disabled = true;
     const commentForm = document.getElementById("comment-form");
+    const wrapper = document.getElementById("comment");
     const blogId = commentForm.dataset.id;
     const commentText = form.commentText.value.trim();
     const editCommentId = form.commentText.dataset.edit;
@@ -384,7 +412,6 @@ const comment = (function () {
 
     if (code === 200 && msg.status === "success") {
       // removes the p tag with 'Be the first to comment.'
-      const wrapper = document.getElementById("comment");
       if (wrapper.lastChild.tagName === "P") wrapper.lastChild.remove();
       reset(form._reset);
 
@@ -396,16 +423,19 @@ const comment = (function () {
 
       const commentHTML = generateComment(
         {
-          _id: msg.message.id,
+          _id: msg.message._id,
           name: msg.message.name,
           commentText: msg.message.commentText,
           replied: msg.message.replied,
           dt: new Date().toJSON(),
+          editable: true,
         },
         true
       );
 
-      commentForm.insertAdjacentElement("afterend", commentHTML);
+      wrapper.insertAdjacentElement("afterbegin", commentHTML);
+      const newComment = document.getElementById(msg.message._id);
+      highlight(newComment);
       return;
     }
 
