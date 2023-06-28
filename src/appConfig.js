@@ -1,9 +1,8 @@
-const { join } = require("path");
-
 const mongoOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 };
+
 const dbName = "fusionx";
 
 module.exports = {
@@ -70,24 +69,24 @@ module.exports = {
 
   /* Pino.js logging */
 
-  // pinoFile: {
-  //   target: "pino/file",
-  //   level: "warn",
-  //   options: {
-  //     destination: join(__dirname, "logs", "error.log"),
-  //     mkdir: true,
-  //     sync: false,
-  //   },
-  // },
-
-  pinoMongo: {
-    target: "pino-mongodb",
+  pinoFile: {
+    target: "pino/file",
     level: "warn",
     options: {
-      uri: process.env.MONGO_CONN_STRING,
-      database: dbName,
-      collection: "logs",
-      mongoOptions,
+      destination: 1,
+      mkdir: true,
+      sync: false,
     },
   },
+
+  // pinoMongo: {
+  //   target: "pino-mongodb",
+  //   level: "warn",
+  //   options: {
+  //     uri: process.env.MONGO_CONN_STRING,
+  //     database: dbName,
+  //     collection: "logs",
+  //     mongoOptions,
+  //   },
+  // },
 };

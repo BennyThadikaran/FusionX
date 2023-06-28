@@ -35,14 +35,6 @@ app.set("view engine", "ejs");
 
 app.disable("x-powered-by"); // remove unnecessary header
 
-/* Setup logging
- * pino(pino.destination()) - logs to stdout (runs in main thread)
- * pino(pino.transport(config.pinoFile)) - logs to logs/error.log
- * pino(pino.transport(config.pinoMongo)) - logs to mongodb
- * */
-const logger = pino(pino.transport(config.pinoMongo));
-app.set("log", logger);
-
 // Mongodb and sessions
 const client = new MongoClient(process.env.MONGO_CONN_STRING, config.mongo);
 
@@ -52,8 +44,15 @@ const client = new MongoClient(process.env.MONGO_CONN_STRING, config.mongo);
   app.set("dbClient", client);
   const port = process.env.PORT || 3000;
 
+  // setup logging
+  const transport = pino.transport(config.pinoFile);
+  const logger = pino(transport);
+  app.set("log", logger);
+
   // prevents errors due to receiving requests before db is ready
-  app.listen(port, () => console.log(`Listening on port ${port}`));
+  transport.on("ready", function () {
+    app.listen(port, () => console.log(`Listening on port ${port}`));
+  });
 
   // START DEV CODE
   if (process.env.NODE_ENV === "production") return;
