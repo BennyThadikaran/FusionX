@@ -96,6 +96,8 @@ const login = async (req, res) => {
     req.session.cart = cart;
     req.session.logged = true;
     req.session.userId = user._id;
+    req.session.fname = user.fname;
+    req.session.lname = user.lname;
 
     if (user.role) req.session.userRole = user.role;
 

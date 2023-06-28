@@ -12,14 +12,17 @@ const comment = (function () {
    * @param {HTMLElement} el
    */
   function edit(el) {
-    reset(document.forms.comment._reset);
+    const form = document.forms.comment;
+    reset(form._reset);
+
+    form.scrollIntoView();
     let p = el.parentNode;
 
     // Loop up till we find <article id=''>
     while (p.tagName !== "ARTICLE") p = p.parentNode;
     const commentWrapper = document.getElementById(p.id);
 
-    const textarea = document.forms.comment.commentText;
+    const textarea = form.commentText;
 
     // add the comment text to textarea
     textarea.value =
@@ -129,15 +132,22 @@ const comment = (function () {
     const form = node.create("form", { name: "comment" });
 
     const field = node.create("div", { class: "field is-grouped" });
+    const field1 = node.create("div", { class: "field" });
 
     const control = node.create("div", { class: "control" });
     const control1 = control.cloneNode();
+    const control2 = control.cloneNode();
 
     const textareaField = node.create("textarea", {
       class: "textarea",
       placeholder: "Add a comment...",
       name: "commentText",
     });
+
+    const help = node.create("div", { class: "help is-size-6" });
+
+    control2.appendChild(textareaField);
+    node.append([control2, help], field1);
 
     const csrfInput = node.create("input", {
       type: "hidden",
@@ -170,7 +180,7 @@ const comment = (function () {
     control.appendChild(submit);
     control1.appendChild(reset);
     node.append([control, control1], field);
-    node.append([textareaField, csrfInput, field], form);
+    node.append([csrfInput, field1, field], form);
     content.appendChild(form);
     node.append([fig, content], frag);
     wrapper.appendChild(frag);
@@ -278,15 +288,23 @@ const comment = (function () {
   }
 
   /**
-   * getcomments
+   * Fetch comments from the server
    */
   async function get() {
     const wrapper = document.getElementById("comment-form");
     const [code, msg] = await ajax.get(`/blog/comments/${wrapper.dataset.id}`);
 
-    if (code === 200) {
-      await generateForm(msg.csrf, msg.name, msg.logged);
-      await generateCommentList(msg.comments, msg.id, msg.logged);
+    if (code !== 200 || msg.status === "error") {
+      const el = document.getElementById("comment-form");
+      el.className = "is-size-4 has-text-centered";
+      el.textContent = "Error Loading Comments";
+      return;
+    }
+
+    if (msg.status === "success") {
+      const { csrf, name, logged, id, comments } = msg.message;
+      await generateForm(csrf, name, logged);
+      await generateCommentList(comments, id, logged);
     }
   }
 
@@ -343,45 +361,45 @@ const comment = (function () {
       return;
     }
 
-    const formData = new FormData(form);
+    const fd = new FormData(form);
 
     if (replyCommentId) {
-      formData.append("replyId", replyCommentId);
-      formData.append("replyName", replyCommentName);
+      fd.append("replyId", replyCommentId);
+      fd.append("replyName", replyCommentName);
     }
 
     if (editCommentId) {
-      [code, msg] = await ajax.put(
-        `/blog/comments/${editCommentId}`,
-        formData,
-        { "x-csrf-token": form.csrf.value }
-      );
+      fd.append("postId", blogId);
+
+      [code, msg] = await ajax.put(`/blog/comments/${editCommentId}`, fd, {
+        "x-csrf-token": form.csrf.value,
+      });
     } else {
-      [code, msg] = await ajax.post(`/blog/comments/${blogId}`, formData, {
+      [code, msg] = await ajax.post(`/blog/comments/${blogId}`, fd, {
         "x-csrf-token": form.csrf.value,
       });
     }
 
     form.btn.disabled = false;
 
-    if (code === 200 && "success" in msg) {
+    if (code === 200 && msg.status === "success") {
       // removes the p tag with 'Be the first to comment.'
       const wrapper = document.getElementById("comment");
       if (wrapper.lastChild.tagName === "P") wrapper.lastChild.remove();
       reset(form._reset);
 
       if (editCommentId) {
-        bodyEl.textContent = msg.commentText;
+        bodyEl.textContent = msg.message.commentText;
         highlight(commentWrapper);
         return;
       }
 
       const commentHTML = generateComment(
         {
-          _id: msg.id,
-          name: msg.name,
-          commentText: msg.commentText,
-          replied: msg.replied,
+          _id: msg.message.id,
+          name: msg.message.name,
+          commentText: msg.message.commentText,
+          replied: msg.message.replied,
           dt: new Date().toJSON(),
         },
         true
@@ -395,7 +413,7 @@ const comment = (function () {
       return addToNextEl(form.commentText, unknownError, false);
     }
 
-    return addToNextEl(form.commentText, msg.error.message, false);
+    return addToNextEl(form.commentText, msg.message, false);
   }
 
   return Object.freeze({
