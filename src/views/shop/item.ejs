@@ -63,7 +63,7 @@
         </div>
         <div class="field-body">
           <div class="select">
-            <select name="qty" disabled>
+            <select name="qty" id="item_qty" disabled>
               <option value="1" selected>1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -93,7 +93,7 @@
 <section class="section">
   <div class="columns">
     <div class="column is-6">
-      <p class="title is-4">Specifications</p>
+      <h2 class="title is-4">Specifications</h2>
       <table class="table is-fullwidth is-capitalized">
         <tbody id="item-specs">
           <% for (const spec of item.specs) { %>
@@ -111,7 +111,7 @@
       </table>
     </div>
     <div class="column readable">
-      <p class="title is-4">Item Description</p>
+      <h2 class="title is-4">Item Description</h2>
       <div class="content" id="item-info">
         <div><%- item.info.info %></div>
       </div>
