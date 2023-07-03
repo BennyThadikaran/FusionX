@@ -1,3 +1,7 @@
+.i-icon > i {
+  display: inline-block;
+}
+
 .i-cart {
   background: url("/images/sprite-53801210.svg") 58.8235294117647% 0 no-repeat;
 }
