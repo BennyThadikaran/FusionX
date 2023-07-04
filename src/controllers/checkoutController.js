@@ -365,7 +365,8 @@ const guestOrder = async (req, res) => {
 
       if (!isSucesss) {
         return res.json({
-          error: "There was a problem processing your order.",
+          status: "error",
+          data: "There was a problem processing your order.",
         });
       }
 
@@ -374,7 +375,8 @@ const guestOrder = async (req, res) => {
     }
 
     return res.json({
-      success: {
+      status: "success",
+      data: {
         key: process.env.paymentId,
         amount: checkout.total,
         payment_order_id: req.session.order.payOrderId,
@@ -414,7 +416,8 @@ const guestOrder = async (req, res) => {
     );
 
     return res.json({
-      success: {
+      status: "success",
+      data: {
         key: process.env.paymentId,
         amount: checkout.total,
         payment_order_id: req.session.order.payOrderId,
@@ -425,7 +428,10 @@ const guestOrder = async (req, res) => {
       },
     });
   }
-  return res.json({ error: "There was a problem processing your order." });
+  return res.json({
+    status: "error",
+    data: "There was a problem processing your order.",
+  });
 };
 
 /**
@@ -959,10 +965,10 @@ const finaliseOrder = async (req, res) => {
       await clearCart(db, req.session.userId);
     }
 
-    return res.json({ success: true });
+    return res.json({ status: "success" });
   }
   // some error occured in transaction
-  return res.json({ success: false });
+  return res.json({ status: "success" });
 };
 
 /**
@@ -974,7 +980,7 @@ const applyOffer = async (req, res) => {
   const code = req.body.code;
 
   if (req.session.checkout.appliedOffers.includes(code)) {
-    return res.json({ error: "Offer already applied" });
+    return res.json({ status: "error", data: "Offer already applied" });
   }
 
   offers = await getOffers(req.app.get("db"));
@@ -989,12 +995,14 @@ const applyOffer = async (req, res) => {
     isIntraState
   );
 
-  if (!status.success) return res.json({ error: status.message });
+  if (!status.success)
+    return res.json({ status: "error", data: status.message });
 
   req.session.checkout = checkout;
 
   return res.json({
-    success: {
+    status: "success",
+    data: {
       items: checkout.items,
       subtotal: checkout.subtotal,
       shippingDiscount: checkout.shippingDiscount,

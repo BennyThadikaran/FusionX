@@ -22,7 +22,11 @@
                 ><%= item.discount || 0 %></span
               >
             </div>
-            <div class="cart-item-total currency"><%= item.total %></div>
+            <div class="cart-item-total">
+              <span id="<%= `${item.sku}-total` %>" class="currency"
+                ><%= item.total %></span
+              >
+            </div>
           </div>
         </div>
         <% } %>
