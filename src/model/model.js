@@ -32,9 +32,19 @@ class ProductFilter {
    * @param {String} specs
    * @param {String} types
    */
-  constructor(specs, types) {
+  constructor() {
     this.specs = {};
     this.type = {};
+  }
+
+  /**
+   * @param {Db} db
+   * @param {string} category
+   */
+  async init(db, category) {
+    const query = category ? { sku: { $regex: category } } : {};
+    const specs = await getDistinct(db, "product_variants", "specs", query);
+    const types = await getDistinct(db, "product_variants", "type", query);
 
     for (const spec of specs) {
       if (!Object.hasOwn(this.specs, spec.k)) this.specs[spec.k] = [];
@@ -46,6 +56,7 @@ class ProductFilter {
       if (!Object.hasOwn(this.type, type.k)) this.type[type.k] = [];
       this.type[type.k].push(type.v);
     }
+    return this;
   }
 
   /**
