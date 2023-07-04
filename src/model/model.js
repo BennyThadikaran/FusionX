@@ -135,7 +135,7 @@ class ProductFilter {
  * @return {Promise.<Array>} [err, data]
  */
 async function getBlogPosts(db, limit, query = {}, sort = -1) {
-  const key = `posts_${sort}_${Object.values(query).join("_")}`;
+  const key = `posts_${limit}_${sort}_${Object.values(query).join("_")}`;
 
   if (cache.has(key)) return cache.get(key);
 
