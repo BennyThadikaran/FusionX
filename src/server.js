@@ -113,11 +113,11 @@ app.use("/csp", express.json(config.cspJson), cspRoute);
 app.use("/*", pageNotFoundRouter);
 
 process.on("uncaughtException", (err, origin) => {
-  logger.fatal(err, origin);
+  app.get("log").fatal(err, origin);
   process.exit(1);
 });
 
 process.on("unhandledRejection", (reason) => {
-  logger.fatal(reason, "unhandledRejection");
+  app.get("log").fatal(reason, "unhandledRejection");
   process.exit(1);
 });

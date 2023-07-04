@@ -4,7 +4,6 @@ const {
   getProductLists,
   getProduct,
   getProductVariants,
-  getDistinct,
   ProductFilter,
 } = require(join(__dirname, "..", "model", "model"));
 
@@ -13,11 +12,7 @@ const shopList = async (req, res) => {
   const db = req.app.get("db");
   const category = req.query.category;
 
-  const query = category ? { sku: { $regex: category } } : {};
-  const specs = await getDistinct(db, "product_variants", "specs", query);
-  const types = await getDistinct(db, "product_variants", "type", query);
-
-  const filterClass = new ProductFilter(specs, types);
+  const filterClass = await new ProductFilter().init(db, category);
   const categoryFilters = filterClass.getFilters();
   const filters = filterClass.parseQueryString(req.query);
 
