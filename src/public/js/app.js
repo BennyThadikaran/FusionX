@@ -709,41 +709,42 @@ async function processCheckout(el) {
   const fd = new FormData(el);
 
   let validation = [
-    fd.has("tel-local")
-      ? validate.mobile(fd.get("tel-local"), "tel-local")
-      : null,
-
-    fd.has("billto-postal-code")
-      ? validate.string(
-          fd.get("billto-postal-code"),
-          {
-            name: "Pincode",
-            ...opts.postalCode,
-          },
-          "billto-postal-code"
-        )
-      : null,
-
-    fd.has("billto-name")
-      ? validate.string(
-          fd.get("billto-name"),
-          {
-            name: "Full name",
-            ...opts.fullname,
-          },
-          "billto-name"
-        )
-      : null,
-    fd.has("billto-street-address")
-      ? validate.string(
-          fd.get("billto-street-address"),
-          {
-            name: "Address",
-            ...opts.address,
-          },
-          "billto-street-address"
-        )
-      : null,
+    validate.string(
+      fd.get("given-name"),
+      { name: "First Name", ...opts.name },
+      "given-name"
+    ),
+    validate.string(
+      fd.get("family-name"),
+      { name: "Last Name", ...opts.name },
+      "family-name"
+    ),
+    validate.email(fd.get("email")),
+    validate.mobile(fd.get("tel-local"), "tel-local"),
+    validate.string(
+      fd.get("billto-postal-code"),
+      {
+        name: "Pincode",
+        ...opts.postalCode,
+      },
+      "billto-postal-code"
+    ),
+    validate.string(
+      fd.get("billto-name"),
+      {
+        name: "Full name",
+        ...opts.fullname,
+      },
+      "billto-name"
+    ),
+    validate.string(
+      fd.get("billto-street-address"),
+      {
+        name: "Address",
+        ...opts.address,
+      },
+      "billto-street-address"
+    ),
   ];
 
   if (!el.sameShpTo.checked) {
