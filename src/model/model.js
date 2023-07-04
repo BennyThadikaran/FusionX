@@ -1515,17 +1515,14 @@ async function getPostalData(db, code) {
 
   if (!err && result) {
     cache.set(code, result);
-    return { status: "success", message: result };
+    return result;
   }
 
-  [err, result] = await to(fetchPostalData(code), logger);
+  result = await fetchPostalData(code);
 
-  if (err) return result;
-
-  if (result.status === "success") {
+  if (!result instanceof Error) {
     cache.set(code, result.message, 24 * 60 * 60);
     collection.insertOne(result.message);
-    return result;
   }
 
   return result;

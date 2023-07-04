@@ -1017,9 +1017,11 @@ const postalCodeLookup = async (req, res) => {
 
   const data = await getPostalData(req.app.get("db"), postalCode);
 
-  if (!data) return res.json({ status: "error", message: "api error" });
+  if (data instanceof Error) {
+    return res.json({ status: "error", message: data.message });
+  }
 
-  return res.json(data);
+  return res.json({ status: "success", message: data });
 };
 
 module.exports = {
