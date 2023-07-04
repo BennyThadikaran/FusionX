@@ -164,31 +164,30 @@ const itemPage = (function () {
 
     const cartAddForm = document.forms.cartAdd;
 
-    if (data.qty === 0) {
-      cartAddForm.qty.disabled = true;
-      cartAddForm.cartBtn.disabled = true;
-      cartAddForm.cartBtn.textContent = "Out of Stock";
-    }
-
     const selectOptionCount = cartAddForm.qty.childElementCount;
 
-    if (selectOptionCount !== Math.min(5, data.qty)) {
-      cartAddForm.qty.innerHTML = "";
-      const newSelectOptionCount = Math.min(5, data.qty);
-      const frag = document.createDocumentFragment();
-      let i;
+    if (data.qty === 0) {
+      cartAddForm.qty.disabled = true;
+      cartAddForm.cartBtn.textContent = "Out of Stock";
+      cartAddForm.cartBtn.disabled = true;
+    } else {
+      if (selectOptionCount !== Math.min(5, data.qty)) {
+        cartAddForm.qty.innerHTML = "";
+        const newSelectOptionCount = Math.min(5, data.qty);
+        const frag = document.createDocumentFragment();
+        let i;
 
-      for (i = 1; i <= newSelectOptionCount; i++) {
-        const opt = node.create("option", { value: i }, i);
-        frag.appendChild(opt);
+        for (i = 1; i <= newSelectOptionCount; i++) {
+          const opt = node.create("option", { value: i }, i);
+          frag.appendChild(opt);
+        }
+        cartAddForm.qty.appendChild(frag);
       }
-      cartAddForm.qty.appendChild(frag);
-    }
 
-    document.forms.cartAdd.qty.disabled = false;
-    const btn = document.forms.cartAdd.cartBtn;
-    btn.disabled = false;
-    btn.value = data.sku;
+      cartAddForm.qty.disabled = false;
+      cartAddForm.cartBtn.disabled = false;
+      cartAddForm.cartBtn.value = data.sku;
+    }
   }
 
   /**
@@ -385,6 +384,8 @@ const itemPage = (function () {
     fd.append("sku", sku);
 
     el.cartBtn.disabled = true;
+
+    if (!fd.has("qty")) return;
 
     const [code, res] = await ajax.post("/cart/add", fd);
 
