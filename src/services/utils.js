@@ -296,13 +296,10 @@ function fetchPostalData(pincode) {
 
         if (data.Status === "Success") {
           const { Pincode, District, State } = data.PostOffice.at(0);
-          return resolve({
-            status: "success",
-            message: { Pincode, District, State },
-          });
+          return resolve({ Pincode, District, State });
         }
 
-        return resolve({ status: "error", message: data.Message });
+        return resolve(new Error(data.Message));
       });
     });
   });
