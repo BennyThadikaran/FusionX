@@ -808,16 +808,12 @@ async function processPayment(el) {
   emptyNextEl(el);
   const [code, res] = await ajax.get("/checkout/order");
 
-  if (code !== 200 || !"success" in res) {
-    return addToNextEl(
-      el,
-      "Error processing order payment. Please try again.",
-      false
-    );
+  if (code !== 200 || res.status === "error") {
+    return addToNextEl(el, res.data, false);
   }
 
   /* eslint camelcase: ["error", {allow: ["order_id", "callback_url"]}]*/
-  const { key, amount, payment_order_id, order_id, prefill } = res.success;
+  const { key, amount, payment_order_id, order_id, prefill } = res.data;
   const name = "FusionX";
   const currency = "INR";
 
@@ -831,7 +827,7 @@ async function processPayment(el) {
     handler: async (obj) => {
       const [code, res] = await ajax.post(`/checkout/${order_id}`, obj);
 
-      if (code === 200 && res.success) {
+      if (code === 200 && res.status === "success") {
         document.location.replace("/order-complete");
       }
     },
@@ -906,20 +902,24 @@ async function applyActiveOffer(el) {
 
   if (code !== 200) return;
 
-  if ("success" in msg) {
-    for (const item of msg.success.items) {
-      if (item.discount > 0)
-        document.getElementById(`${item.sku}-discount`).textContent =
-          item.discount;
+  if (msg.status === "success") {
+    for (const item of msg.data.items) {
+      if (item.discount > 0) {
+        const spanDiscount = document.getElementById(`${item.sku}-discount`);
+        const spanTotal = document.getElementById(`${item.sku}-total`);
+
+        spanDiscount.textContent = item.discount;
+        spanTotal.textContent = item.total;
+      }
     }
-    document.getElementById("subtotal").textContent = msg.success.subtotal;
-    document.getElementById("itemDiscount").textContent =
-      msg.success.itemDiscount;
+
+    document.getElementById("subtotal").textContent = msg.data.subtotal;
+    document.getElementById("itemDiscount").textContent = msg.data.itemDiscount;
     document.getElementById(
       "shippingDiscount"
-    ).textContent = `- ${msg.success.shippingDiscount}`;
-    document.getElementById("shipping").textContent = msg.success.shipping;
-    document.getElementById("total").textContent = msg.success.total;
+    ).textContent = `- ${msg.data.shippingDiscount}`;
+    document.getElementById("shipping").textContent = msg.data.shipping;
+    document.getElementById("total").textContent = msg.data.total;
     document
       .getElementById("appliedOffers")
       .appendChild(
@@ -930,8 +930,8 @@ async function applyActiveOffer(el) {
 
   let notification = document.getElementById("offer-notify");
 
-  const text = msg.success ? "Offer applied" : msg.error;
-  const cls = msg.success ? "success" : "danger";
+  const text = msg.status === "success" ? "Offer applied" : msg.data;
+  const cls = msg.status === "success" ? "success" : "danger";
 
   if (!notification) {
     notification = node.create(
@@ -1277,7 +1277,7 @@ const multistep = (function () {
 
       if (currStep > stepLen) currStep = stepLen;
 
-      updateProgess();
+      updateProgress();
     });
 
     prev.addEventListener("click", async () => {
@@ -1295,7 +1295,7 @@ const multistep = (function () {
       showTab(currTab);
       if (currStep < 1) currStep = 1;
 
-      updateProgess();
+      updateProgress();
     });
   }
 
@@ -1313,7 +1313,7 @@ const multistep = (function () {
    * - Indicate the current step in the progress line
    * - Update next and prev button states
    */
-  function updateProgess() {
+  function updateProgress() {
     steps.forEach((step, i) => {
       i < currStep
         ? step.classList.add("active")
