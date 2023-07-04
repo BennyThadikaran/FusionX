@@ -9,6 +9,11 @@
       <div class="column">
         <a href="/profile/orders">< Back to Orders</a>
       </div>
+      <% if (!order) { %>
+      <div class="column">
+        <h1 class="title has-text-centered">Order Not Found</h1>
+      </div>
+      <% } else { %>
       <div
         class="column is-flex is-justify-content-space-between is-flex-wrap-wrap"
       >
@@ -125,6 +130,7 @@
           </table>
         </div>
       </div>
+      <% } %>
     </div>
   </div>
 </div>

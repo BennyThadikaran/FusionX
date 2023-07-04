@@ -1458,54 +1458,24 @@ async function getUserOrders(db, userId, projection = null) {
  * @param {String} userId
  */
 async function getOrderById(db, orderId, userId) {
-  const pipeline = [
-    { $match: { _id: new ObjectId(orderId), userId: new ObjectId(userId) } },
-    {
-      $lookup: {
-        from: "addresses",
-        localField: "shipment.address",
-        foreignField: "_id",
-        as: "shipment.address",
-      },
-    },
-    {
-      $lookup: {
-        from: "addresses",
-        localField: "billTo",
-        foreignField: "_id",
-        as: "billTo",
-      },
-    },
-    {
-      $unwind: {
-        path: "$shipment.address",
-        includeArrayIndex: "0",
-      },
-    },
-    {
-      $unwind: {
-        path: "$billTo",
-        includeArrayIndex: "0",
-      },
-    },
-    {
-      $project: {
-        createdAt: 1,
-        items: 1,
-        subtotal: 1,
-        shipping: 1,
-        shippingDiscount: 1,
-        itemDiscount: 1,
-        total: 1,
-        payment: 1,
-        billTo: 1,
-        shipment: 1,
-      },
-    },
-  ];
-
   const [, result] = await to(
-    db.collection("orders").aggregate(pipeline).toArray(),
+    db.collection("orders").findOne(
+      { _id: new ObjectId(orderId), userId: new ObjectId(userId) },
+      {
+        projection: {
+          createdAt: 1,
+          items: 1,
+          subtotal: 1,
+          shipping: 1,
+          shippingDiscount: 1,
+          itemDiscount: 1,
+          total: 1,
+          payment: 1,
+          billTo: 1,
+          shipment: 1,
+        },
+      }
+    ),
     logger
   );
 
