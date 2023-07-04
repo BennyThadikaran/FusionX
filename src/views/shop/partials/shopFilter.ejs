@@ -26,13 +26,8 @@
 
         <div class="control">
           <% for (const attr of val) { %>
-          <label for="<%= attr %>" class="checkbox">
-            <input
-              name="<%= key %>"
-              type="checkbox"
-              id="<%= attr %>"
-              value="<%= attr %>"
-            />
+          <label class="checkbox">
+            <input name="<%= key %>" type="checkbox" value="<%= attr %>" />
             <span><%= attr %></span>
           </label>
           <% } %>
@@ -45,13 +40,8 @@
 
         <div class="control">
           <% for (const attr of val) { %>
-          <label for="<%= attr %>" class="checkbox">
-            <input
-              name="<%= key %>"
-              type="checkbox"
-              id="<%= attr %>"
-              value="<%= attr %>"
-            />
+          <label class="checkbox">
+            <input name="<%= key %>" type="checkbox" value="<%= attr %>" />
             <span><%= attr %></span>
           </label>
           <% } %>
