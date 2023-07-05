@@ -639,7 +639,7 @@ const postUserCheckout = async (req, res) => {
       }
 
       if (Object.keys(req.errors).length > 0) {
-        return res.json({ error: req.errors });
+        return res.json({ status: "error", data: req.errors });
       }
 
       shipTo.hash = getAddressHash(shipTo);
@@ -743,7 +743,7 @@ const postUserCheckout = async (req, res) => {
     }
 
     if (Object.keys(req.errors).length > 0) {
-      return res.json({ error: req.errors });
+      return res.json({ status: "error", data: req.errors });
     }
 
     billTo.hash = getAddressHash(billTo);
@@ -822,7 +822,8 @@ const userOrder = async (req, res) => {
 
       if (!isSucesss) {
         return res.json({
-          error: "There was a problem processing your order.",
+          status: "error",
+          data: "There was a problem processing your order.",
         });
       }
 
@@ -831,7 +832,8 @@ const userOrder = async (req, res) => {
     }
 
     return res.json({
-      success: {
+      status: "success",
+      data: {
         key: process.env.paymentId,
         amount: checkout.total,
         payment_order_id: req.session.order.payOrderId,
@@ -872,7 +874,8 @@ const userOrder = async (req, res) => {
     );
 
     return res.json({
-      success: {
+      status: "success",
+      data: {
         key: process.env.paymentId,
         amount: checkout.total,
         payment_order_id: req.session.order.payOrderId,
@@ -883,7 +886,10 @@ const userOrder = async (req, res) => {
       },
     });
   }
-  return res.json({ error: "There was a problem processing your order." });
+  return res.json({
+    status: "error",
+    data: "There was a problem processing your order.",
+  });
 };
 
 /**
@@ -1026,10 +1032,10 @@ const postalCodeLookup = async (req, res) => {
   const data = await getPostalData(req.app.get("db"), postalCode);
 
   if (data instanceof Error) {
-    return res.json({ status: "error", message: data.message });
+    return res.json({ status: "error", data: data.message });
   }
 
-  return res.json({ status: "success", message: data });
+  return res.json({ status: "success", data });
 };
 
 module.exports = {
