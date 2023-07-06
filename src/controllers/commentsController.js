@@ -3,12 +3,12 @@ const { join } = require("path");
 const striptags = require("striptags");
 const validate = require(join(__dirname, "..", "services", "validate.js"));
 const cache = require(join(__dirname, "..", "model", "cache"));
-const { addBlogComment, editBlogComment, getBlogComments } = require(join(
-  __dirname,
-  "..",
-  "model",
-  "model"
-));
+const {
+  addBlogComment,
+  editBlogComment,
+  getBlogComments,
+  getBlogCommentsCount,
+} = require(join(__dirname, "..", "model", "model"));
 
 const errResponse = "An error occured. Please try again.";
 
@@ -54,7 +54,7 @@ const postComment = async (req, res) => {
   }
 
   if (Object.keys(req.errors).length > 0) {
-    return res.json({ status: "error", message: req.errors });
+    return res.json({ status: "error", data: req.errors });
   }
 
   const db = req.app.get("db");
@@ -73,7 +73,7 @@ const postComment = async (req, res) => {
 
     return res.json({
       status: "success",
-      message: {
+      data: {
         _id: result.insertedId,
         name,
         commentText,
@@ -86,7 +86,7 @@ const postComment = async (req, res) => {
     });
   }
 
-  return res.json({ status: "error", message: errResponse });
+  return res.json({ status: "error", data: errResponse });
 };
 
 const editComment = async (req, res) => {
@@ -117,7 +117,7 @@ const editComment = async (req, res) => {
   }
 
   if (Object.keys(req.errors).length > 0) {
-    return res.json({ status: "error", message: req.errors });
+    return res.json({ status: "error", data: req.errors });
   }
 
   const result = await editBlogComment(
@@ -132,11 +132,11 @@ const editComment = async (req, res) => {
 
     return res.json({
       status: "success",
-      message: { commentText: commentText },
+      data: { commentText: commentText },
     });
   }
 
-  return res.json({ status: "error", message: errResponse });
+  return res.json({ status: "error", data: errResponse });
 };
 
 const getComments = async (req, res) => {
@@ -144,21 +144,27 @@ const getComments = async (req, res) => {
     return res.sendStatus(400);
   }
 
+  const db = req.app.get("db");
+  const postId = req.params.postId;
+
   const comments = await getBlogComments(
-    req.app.get("db"),
+    db,
     req.query.sort,
-    req.params.postId,
+    postId,
     req.query.id,
     req.app.locals.commentListLimit
   );
 
+  const commentCount = await getBlogCommentsCount(db, postId);
+
   if (comments === null) {
-    return res.json({ status: "error", message: errResponse });
+    return res.json({ status: "error", data: errResponse });
   }
 
   return res.json({
     status: "success",
-    message: {
+    data: {
+      commentCount,
       comments: comments,
       csrf: req.session.csrf,
       id: req.session.userId,

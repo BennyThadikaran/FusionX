@@ -31,12 +31,17 @@
             ><%= post.author %></a
           >
         </span>
-        <div class="tags mt-4">
-          <% for (const tag of post.tags) { %>
-          <a href="/blog?tag=<%= tag %>" class="tag is-dark is-medium"
-            ><%= tag %></a
-          >
-          <% } %>
+        <div
+          id="tag_comment"
+          class="is-flex is-justify-content-space-between my-4"
+        >
+          <div class="tags">
+            <% for (const tag of post.tags) { %>
+            <a href="/blog?tag=<%= tag %>" class="tag is-dark is-medium"
+              ><%= tag %></a
+            >
+            <% } %>
+          </div>
         </div>
 
         <%- post.body.body %>

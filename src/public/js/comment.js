@@ -3,6 +3,10 @@ import { addToNextEl } from "./Utils.js";
 import validate from "./validate.js/src/validate.js";
 import ajax from "./ajax/src/ajax.js";
 import node from "./node.js/src/node.js";
+import cache from "./cache.js/src/cache.js";
+
+const store = cache();
+const cacheExpiry = 30 * 60; // 30 minutes
 
 const comment = (function () {
   "use strict";
@@ -106,7 +110,7 @@ const comment = (function () {
    * @param {String} name full name of logged user
    * @param {Boolean} isLogged is the user logged?
    */
-  async function generateForm(csrf, name, isLogged) {
+  function generateForm(csrf, name, isLogged) {
     const wrapper = document.getElementById("comment-form");
 
     if (!isLogged) {
@@ -243,13 +247,17 @@ const comment = (function () {
       const nav = node.create("nav", { class: "level is-mobile" });
       const navDiv = node.create("div", { class: "level-left" });
 
-      navDiv.appendChild(
-        node.create("a", { class: "level-item", "data-name": "reply" }, "Reply")
-      );
-
       if (msg.editable) {
         navDiv.appendChild(
           node.create("a", { class: "level-item", "data-name": "edit" }, "Edit")
+        );
+      } else {
+        navDiv.appendChild(
+          node.create(
+            "a",
+            { class: "level-item", "data-name": "reply" },
+            "Reply"
+          )
         );
       }
 
@@ -272,7 +280,8 @@ const comment = (function () {
     const frag = document.createDocumentFragment();
 
     for (const msg of comments) {
-      msg.editable = userId === msg.userId;
+      if (userId === msg.userId) msg.editable = true;
+
       frag.appendChild(generateComment(msg, isLogged));
     }
     return frag;
@@ -289,19 +298,41 @@ const comment = (function () {
 
     if (commentId) url += `?id=${commentId}`;
 
-    const [code, msg] = await ajax.get(url);
+    let data = store.oGet(url);
 
-    if (code !== 200 || msg.status === "error") {
-      const el = document.getElementById("comment-form");
-      el.className = "is-size-4 has-text-centered";
-      el.textContent = "Error Loading Comments";
-      return;
+    if (!data) {
+      const [code, msg] = await ajax.get(url);
+
+      if (code !== 200 || msg.status === "error") {
+        const el = document.getElementById("comment-form");
+        el.className = "is-size-4 has-text-centered";
+        el.textContent = "Error Loading Comments";
+        return;
+      }
+
+      data = msg.data;
+      store.oSet(url, data, cacheExpiry);
     }
 
-    const { csrf, name, logged, id, comments } = msg.message;
+    const { csrf, name, logged, id, comments, commentCount } = data;
 
+    // not a paginated request
     if (!commentId) {
-      await generateForm(csrf, name, logged);
+      generateForm(csrf, name, logged);
+
+      if (commentCount) {
+        const tag = document.getElementById("tag_comment");
+
+        const span = node.create("span", { class: "tag is-medium" });
+        const a = node.create(
+          "a",
+          { href: "#comment-form" },
+          `${commentCount} Comments`
+        );
+
+        span.appendChild(a);
+        tag.appendChild(span);
+      }
 
       if (!comments.length) {
         const p = node.create(
@@ -321,6 +352,7 @@ const comment = (function () {
     if (comments.length < commentListLimit) return;
 
     const divBtn = node.create("div", { class: "has-text-centered mt-6" });
+
     const btn = node.create(
       "button",
       {
@@ -411,22 +443,23 @@ const comment = (function () {
     form.btn.disabled = false;
 
     if (code === 200 && msg.status === "success") {
+      store.clear();
       // removes the p tag with 'Be the first to comment.'
       if (wrapper.lastChild.tagName === "P") wrapper.lastChild.remove();
       reset(form._reset);
 
       if (editCommentId) {
-        bodyEl.textContent = msg.message.commentText;
+        bodyEl.textContent = msg.data.commentText;
         highlight(commentWrapper);
         return;
       }
 
       const commentHTML = generateComment(
         {
-          _id: msg.message._id,
-          name: msg.message.name,
-          commentText: msg.message.commentText,
-          replied: msg.message.replied,
+          _id: msg.data._id,
+          name: msg.data.name,
+          commentText: msg.data.commentText,
+          replied: msg.data.replied,
           dt: new Date().toJSON(),
           editable: true,
         },
@@ -434,7 +467,7 @@ const comment = (function () {
       );
 
       wrapper.insertAdjacentElement("afterbegin", commentHTML);
-      const newComment = document.getElementById(msg.message._id);
+      const newComment = document.getElementById(msg.data._id);
       highlight(newComment);
       return;
     }
@@ -443,7 +476,7 @@ const comment = (function () {
       return addToNextEl(form.commentText, unknownError, false);
     }
 
-    return addToNextEl(form.commentText, msg.message, false);
+    return addToNextEl(form.commentText, msg.data, false);
   }
 
   return Object.freeze({

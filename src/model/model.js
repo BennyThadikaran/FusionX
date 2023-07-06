@@ -334,6 +334,19 @@ async function getBlogComments(db, sort, postId, commentId, limit) {
 }
 
 /**
+ * @param {Db} db
+ * @param {string} postId blog post id
+ * @return {Promise.<number>}
+ */
+async function getBlogCommentsCount(db, postId) {
+  const [, result] = await to(
+    db.collection("comments").countDocuments({ postId: new ObjectId(postId) }),
+    logger
+  );
+  return result;
+}
+
+/**
  *
  * @param {Object} filter Object returned by <BaseFilter>.parseQueryString
  * @param {Number} limit Number of documents to return
@@ -813,7 +826,7 @@ async function getCartItems(db, userId) {
  * Get count of cart items
  * @param {Db} db
  * @param {String} userId
- * @return {Promise.Array} [err, data]
+ * @return {Promise.number}
  */
 async function getCartCount(db, userId) {
   const [, result] = await to(
@@ -1690,6 +1703,7 @@ module.exports = {
   addBlogComment,
   editBlogComment,
   getBlogComments,
+  getBlogCommentsCount,
   getProductLists,
   getProductBySku,
   getProduct,
