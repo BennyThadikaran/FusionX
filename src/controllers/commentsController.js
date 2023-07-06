@@ -71,19 +71,24 @@ const postComment = async (req, res) => {
   if (result.insertedId) {
     clearCommentCache(req.params.postId);
 
-    return res.json({
+    const resObj = {
       status: "success",
       data: {
         _id: result.insertedId,
         name,
         commentText,
-        replied: {
-          id: replyId,
-          name: replyName,
-        },
         text: "Comment added!",
       },
-    });
+    };
+
+    if (replyId) {
+      resObj.data.replied = {
+        id: replyId,
+        name: replyName,
+      };
+    }
+
+    return res.json(resObj);
   }
 
   return res.json({ status: "error", data: errResponse });
