@@ -292,9 +292,9 @@ const comment = (function () {
    * @param {String} [commentId = null] used to paginate more comments
    */
   async function get(commentId = null) {
-    const wrapper = document.getElementById("comment-form");
+    const formWrapper = document.getElementById("comment-form");
     const commentWrapper = document.getElementById("comment");
-    let url = `/blog/comments/${wrapper.dataset.id}`;
+    let url = `/blog/comments/${formWrapper.dataset.id}`;
 
     if (commentId) url += `?id=${commentId}`;
 
@@ -314,26 +314,28 @@ const comment = (function () {
       store.oSet(url, data, cacheExpiry);
     }
 
-    const { csrf, name, logged, id, comments, commentCount } = data;
+    const { csrf, name, logged, id, comments, count } = data;
 
     // not a paginated request
     if (!commentId) {
       generateForm(csrf, name, logged);
 
-      if (commentCount) {
+      // add comment count to blog post page
+      if (count) {
         const tag = document.getElementById("tag_comment");
 
         const span = node.create("span", { class: "tag is-medium" });
         const a = node.create(
           "a",
           { href: "#comment-form" },
-          `${commentCount} Comments`
+          `${count} Comments`
         );
 
         span.appendChild(a);
         tag.appendChild(span);
       }
 
+      // if no comments
       if (!comments.length) {
         const p = node.create(
           "p",
@@ -344,27 +346,37 @@ const comment = (function () {
         commentWrapper.appendChild(p);
         return;
       }
+
+      // load more button
+      const divBtn = node.create("div", { class: "has-text-centered mt-6" });
+
+      const btn = node.create(
+        "button",
+        {
+          class: "button is-info is-medium",
+          id: "loadBtn",
+          "data-id": comments.at(-1)._id,
+          "data-name": "commentLoadMore",
+        },
+        "Load More"
+      );
+
+      divBtn.appendChild(btn);
+      commentWrapper.parentNode.appendChild(divBtn);
     }
 
     const frag = generateCommentList(comments, id, logged);
     commentWrapper.appendChild(frag);
 
-    if (comments.length < commentListLimit) return;
+    if (commentId) {
+      const loadBtn = document.getElementById("loadBtn");
 
-    const divBtn = node.create("div", { class: "has-text-centered mt-6" });
-
-    const btn = node.create(
-      "button",
-      {
-        class: "button is-info is-medium",
-        "data-id": comments.at(-1)._id,
-        "data-name": "commentLoadMore",
-      },
-      "Load More"
-    );
-
-    divBtn.appendChild(btn);
-    commentWrapper.parentNode.appendChild(divBtn);
+      if (comments.length < commentListLimit) {
+        loadBtn.disabled = true;
+      } else {
+        loadBtn.dataset.id = comments.at(-1)._id;
+      }
+    }
   }
 
   /**
