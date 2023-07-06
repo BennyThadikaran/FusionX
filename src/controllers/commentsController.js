@@ -161,16 +161,22 @@ const getComments = async (req, res) => {
     return res.json({ status: "error", data: errResponse });
   }
 
+  const data = {
+    count: commentCount || 0,
+    comments: comments,
+    csrf: req.session.csrf,
+    id: req.session.userId,
+    logged: false,
+  };
+
+  if (req.session.logged) {
+    data.name = `${req.session.fname} ${req.session.lname}`;
+    data.logged = true;
+  }
+
   return res.json({
     status: "success",
-    data: {
-      commentCount,
-      comments: comments,
-      csrf: req.session.csrf,
-      id: req.session.userId,
-      name: `${req.session.fname} ${req.session.lname}`,
-      logged: Boolean(req.session.logged),
-    },
+    data,
   });
 };
 
