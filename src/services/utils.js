@@ -1,5 +1,5 @@
 const { join } = require("path");
-const zxcvbn = require(join(__dirname, "..", "public", "js", "zxcvbn.min"));
+const zxcvbn = require(join(__dirname, "zxcvbn.min"));
 const { get } = require("https");
 const { createHash } = require("crypto");
 
