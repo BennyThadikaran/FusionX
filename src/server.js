@@ -2,6 +2,7 @@ const express = require("express");
 const { join } = require("path");
 const { writeFile } = require("fs/promises");
 const session = require("express-session");
+const serveCompressed = require("express-precompressed");
 const pino = require("pino");
 const { MongoClient } = require("mongodb");
 const MongoStore = require("connect-mongo");
@@ -14,11 +15,6 @@ const app = express();
 
 // app config
 const config = require(join(__dirname, "appConfig"));
-
-if (app.get("env") === "production") {
-  app.set("trust proxy", 1); // trust first proxy
-  config.session.cookie.secure = true;
-}
 
 // set some app variables
 app.locals.env = process.env.NODE_ENV;
@@ -76,11 +72,17 @@ config.session.store = MongoStore.create({
   crypto: { secret: process.env.STORE_SECRET },
 });
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1); // trust first proxy
+  config.session.cookie.secure = true;
+  app.use("/", serveCompressed("public", "public", config.static));
+} else {
+  app.use(express.static(join(__dirname, "public"), { index: false }));
+}
+
 app.use(session(config.session));
 
 app.use(cors(config.corsOption));
-
-app.use(express.static(join(__dirname, "public"), config.static));
 
 app.use(express.urlencoded(config.urlencoded));
 
