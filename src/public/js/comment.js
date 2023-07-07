@@ -361,6 +361,8 @@ const comment = (function () {
         "Load More"
       );
 
+      if (comments.length < commentListLimit) btn.disabled = true;
+
       divBtn.appendChild(btn);
       commentWrapper.parentNode.appendChild(divBtn);
     }

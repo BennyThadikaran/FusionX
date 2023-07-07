@@ -1,14 +1,10 @@
-const mongoOptions = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-};
-
-const dbName = "fusionx";
-
 module.exports = {
   // mongodb config
-  mongoOptions,
-  dbName,
+  mongoOptions: {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  },
+  dbName: "fusionx", // mongodb database name
   registeredState: "MAHARASHTRA", // ** IMP ** State from which goods are supplied
   paymentProvider: "FakePay", // Payment gateway provider name
   pwdInputs: [], // inputs passed to zxcvbn eg. site name or site specific tags
@@ -21,11 +17,11 @@ module.exports = {
   // in production other options include Cloudinary, aws, filestack etc.
   imgUrl: "https://placehold.co", // base url for loading images.
 
-  // express.static
+  // express-precompressed
   static: {
+    enableBrotli: true,
     index: false,
-    maxAge: 365 * 24 * 60 * 60 * 1000, // 365 days expiry
-    immutable: true,
+    extensions: ["js", "css", "png", "svg"],
   },
 
   // cors
@@ -68,7 +64,6 @@ module.exports = {
   },
 
   /* Pino.js logging */
-
   pinoFile: {
     target: "pino/file",
     level: "warn",
@@ -78,15 +73,4 @@ module.exports = {
       sync: false,
     },
   },
-
-  // pinoMongo: {
-  //   target: "pino-mongodb",
-  //   level: "warn",
-  //   options: {
-  //     uri: process.env.MONGO_CONN_STRING,
-  //     database: dbName,
-  //     collection: "logs",
-  //     mongoOptions,
-  //   },
-  // },
 };

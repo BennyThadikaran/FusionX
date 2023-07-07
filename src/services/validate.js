@@ -54,7 +54,7 @@ const validate = (function () {
     }
 
     if (str.length !== 10 || !mobRe.test(str)) {
-      log.mobile = "Please enter a valid mobile no.";
+      log[name] = "Please enter a valid mobile no.";
       return false;
     }
 
