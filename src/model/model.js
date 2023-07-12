@@ -29,12 +29,11 @@ function setLogger(logObj) {
 class ProductFilter {
   /**
    * @constructor
-   * @param {String} specs
-   * @param {String} types
    */
   constructor() {
     this.specs = {};
     this.type = {};
+    this.specsLength = this.typeLength = 0;
   }
 
   /**
@@ -49,65 +48,65 @@ class ProductFilter {
     for (const spec of specs) {
       if (!Object.hasOwn(this.specs, spec.k)) this.specs[spec.k] = [];
       this.specs[spec.k].push(spec.v);
+      this.specsLength += 1;
     }
 
     for (const type of types) {
       if (type.k === "color") continue;
       if (!Object.hasOwn(this.type, type.k)) this.type[type.k] = [];
       this.type[type.k].push(type.v);
+      this.typeLength += 1;
     }
     return this;
   }
 
   /**
-   * Parse the query params and return valid filters object
+   * Parse the query params and return sanitized query object
    * @param {Object} query express.js query params object
    * @return {Object}
    */
   parseQueryString(query) {
+    const sanitized = {
+      specsLength: 0,
+      typeLength: 0,
+    };
+
     // price or ObjectId
-    const sortBy = query.by === "price" ? "price" : "_id";
+    sanitized.sortBy = query.by === "price" ? "price" : "_id";
 
     // asc or desc
-    const sort = Number.parseInt(query.sort, 10) === 1 ? 1 : -1;
+    sanitized.sort = query.sort === "1" ? 1 : -1;
 
-    const id = Number.parseInt(query.id, 10);
-    const skip = ObjectId.isValid(query.id)
-      ? new ObjectId(query.id)
-      : Number.isNaN(id)
-      ? null // if NaN
-      : id;
+    if (query.id) {
+      let id;
+      sanitized.skip = ObjectId.isValid(query.id)
+        ? new ObjectId(query.id)
+        : Number.isNaN((id = Number.parseInt(query.id, 10)))
+        ? null // if NaN
+        : id;
+    }
 
-    const filter = { sortBy, sort, skip };
+    if (query.category && typeof query.category === "string") {
+      sanitized.category = query.category;
+    }
 
     // iterate over query params
     for (const [k, v] of Object.entries(query)) {
-      if (k === "category") {
-        filter.category = v; // set category value
-        continue;
-      }
-
       // check if k is a key in this.specs or this.type else null
       const key = k in this.specs ? "specs" : k in this.type ? "type" : null;
 
       if (!key) continue; // null
 
+      if (!(key in sanitized)) sanitized[key] = {};
+
       // ?size=XL&size=XXL will be interpreted as an Array
-      if (Array.isArray(v)) {
-        v.forEach((attr) => {
-          // check if attr is part of this.specs[key] or this.type[key]
-          const idx = this[key][k].indexOf(attr);
-          // if not remove the attr
-          if (idx === -1) v.splice(idx, 1);
-        });
-      }
-
-      if (!Object.hasOwn(filter, key)) filter[key] = {};
-
-      filter[key][k] = v;
+      sanitized[key][k] = Array.isArray(v)
+        ? v.filter((val) => this[key][k].includes(val))
+        : v;
+      sanitized[`${key}Length`] += 1;
     }
 
-    return filter;
+    return sanitized;
   }
 
   /**
@@ -120,8 +119,10 @@ class ProductFilter {
   getFilters() {
     const filter = {};
 
-    if (Object.keys(this.type).length > 0) filter.type = this.type;
-    if (Object.keys(this.specs).length > 0) filter.specs = this.specs;
+    if (this.typeLength) filter.type = this.type;
+
+    if (this.specsLength) filter.specs = this.specs;
+
     return filter;
   }
 }
@@ -409,7 +410,7 @@ function compileProductPipeline(filter, limit, len) {
   pipeline.push({
     $project: {
       href: 1,
-      image: len > 0 ? { $first: "$images" } : 1,
+      image: { $first: "$images" },
       title: 1,
       price: 1,
     },
@@ -426,19 +427,22 @@ function compileProductPipeline(filter, limit, len) {
  */
 function compileProductQuery(filter, len) {
   const query = { qty: { $gt: 0 }, z_index: 1 };
-  const { sortBy, sort, skip } = filter;
-  const ignoreList = ["sortBy", "sort", "skip", "category"];
+  const { category, sortBy, sort, skip, specsLength, typeLength } = filter;
 
-  if (filter.category) query.sku = { $regex: filter.category };
+  // all colors may not have z_index of 1
+  if (filter.specs?.basecolor) delete query.z_index;
 
-  for (const key of Object.keys(filter)) {
-    if (ignoreList.includes(key)) continue;
+  if (category) query.sku = { $regex: category };
 
-    for (const val of Object.values(filter[key])) {
-      // specs.v or type.v
-      query[`${key}.v`] = Array.isArray(val) ? { $in: val } : val;
-    }
-  }
+  specsLength &&
+    Object.values(filter.specs).forEach((val) => {
+      query["specs.v"] = Array.isArray(val) ? { $in: val } : val;
+    });
+
+  typeLength &&
+    Object.values(filter.type).forEach((val) => {
+      query["type.v"] = Array.isArray(val) ? { $in: val } : val;
+    });
 
   // skip is ObjectId
   if (sortBy === "_id") {
@@ -451,10 +455,6 @@ function compileProductQuery(filter, len) {
   }
 
   if (!len) return query;
-
-  // if (filter.type || (filter.specs && "basecolor" in filter.specs)) {
-  //   query.qty = { $gt: 0 };
-  // }
 
   return query;
 }
@@ -470,13 +470,10 @@ function compileProductQuery(filter, len) {
 async function getProductLists(db, filters, limit, key) {
   if (cache.has(key)) return cache.get(key);
 
-  const specsLength = filters?.specs ? Object.keys(filters.specs).length : 0;
-  const typeLength = filters?.type ? Object.keys(filters.type).length : 0;
+  const { specsLength, typeLength, sortBy, sort } = filters;
   const maxlen = Math.max(specsLength, typeLength);
 
   const collection = db.collection("product_variants");
-
-  const { sortBy, sort } = filters;
 
   if (maxlen > 1) {
     // Aggregation
