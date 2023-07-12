@@ -14,19 +14,20 @@ const shopList = async (req, res) => {
 
   const filterClass = await new ProductFilter().init(db, category);
   const categoryFilters = filterClass.getFilters();
-  const filters = filterClass.parseQueryString(req.query);
+  const sanitizedQuery = filterClass.parseQueryString(req.query);
 
   const products = await getProductLists(
     db,
-    filters,
+    sanitizedQuery,
     req.app.locals.shopListLimit,
     req.originalUrl
   );
 
   if (req.xhr) return res.json({ data: products });
 
-  if (filters.sortBy === "price") {
-    res.locals.limit = req.app.locals.shopListLimit + (filters.skip ?? 0);
+  if (sanitizedQuery.sortBy === "price") {
+    res.locals.limit =
+      req.app.locals.shopListLimit + (sanitizedQuery.skip ?? 0);
   }
 
   return res.render("shop/shopList", {
