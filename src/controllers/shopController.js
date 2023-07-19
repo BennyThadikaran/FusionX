@@ -12,7 +12,7 @@ const shopList = async (req, res) => {
   const db = req.app.get("db");
   const category = req.query.category;
 
-  const filterClass = await new ProductFilter().init(db, category);
+  const filterClass = await ProductFilter.init(db, category);
   const categoryFilters = filterClass.getFilters();
   const sanitizedQuery = filterClass.parseQueryString(req.query);
 

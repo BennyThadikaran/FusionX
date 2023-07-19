@@ -27,37 +27,34 @@ function setLogger(logObj) {
 
 /** ProductFilter class */
 class ProductFilter {
-  /**
-   * @constructor
-   */
-  constructor() {
-    this.specs = {};
-    this.type = {};
-    this.specsLength = this.typeLength = 0;
-  }
+  specs = {};
+  type = {};
+  specsLength = 0;
+  typeLength = 0;
 
   /**
    * @param {Db} db
    * @param {string} category
    */
-  async init(db, category) {
+  static async init(db, category) {
+    const cls = new ProductFilter();
     const query = category ? { sku: { $regex: category } } : {};
     const specs = await getDistinct(db, "product_variants", "specs", query);
     const types = await getDistinct(db, "product_variants", "type", query);
 
     for (const spec of specs) {
-      if (!Object.hasOwn(this.specs, spec.k)) this.specs[spec.k] = [];
-      this.specs[spec.k].push(spec.v);
-      this.specsLength += 1;
+      if (!Object.hasOwn(cls.specs, spec.k)) cls.specs[spec.k] = [];
+      cls.specs[spec.k].push(spec.v);
+      cls.specsLength += 1;
     }
 
     for (const type of types) {
       if (type.k === "color") continue;
-      if (!Object.hasOwn(this.type, type.k)) this.type[type.k] = [];
-      this.type[type.k].push(type.v);
-      this.typeLength += 1;
+      if (!Object.hasOwn(cls.type, type.k)) cls.type[type.k] = [];
+      cls.type[type.k].push(type.v);
+      cls.typeLength += 1;
     }
-    return this;
+    return cls;
   }
 
   /**
