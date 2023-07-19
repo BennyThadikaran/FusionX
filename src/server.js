@@ -53,8 +53,8 @@ const client = new MongoClient(process.env.MONGO_CONN_STRING, config.mongo);
   // START DEV CODE
   if (process.env.NODE_ENV === "production") return;
 
-  // add variables we want to use on the front end
-  // this can be compiled using rollup in production
+  /* add variables we want to use on the front end to public/js/variables.js
+  this will be compiled using rollup in production */
   await writeFile(
     join(__dirname, "public", "js", "variables.js"),
     `export const imgUrl = "${config.imgUrl}";
