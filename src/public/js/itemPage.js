@@ -521,6 +521,10 @@ const itemPage = (function () {
 
     const btn = document.querySelector(`button[value=${sku}]`);
 
+    document.getElementById(
+      "cart-title"
+    ).textContent = `CART ( ${cart.length} items )`;
+
     if (btn) {
       btn.textContent = btnDefault;
       btn.disabled = false;
@@ -553,6 +557,7 @@ const itemPage = (function () {
 
       body.appendChild(p);
       document.getElementById("cart-subtotal").textContent = 0;
+      document.getElementById("cart-title").textContent = `CART ( 0 items )`;
     }
     store.remove("cart");
 

@@ -358,7 +358,11 @@ function compileProductPipeline(filter, limit, len) {
 
   const { sortBy, sort, skip } = filter;
 
-  let query = { sku: { $regex: filter.category } };
+  let query = {};
+
+  if (filter.category) {
+    query.sku = { $regex: filter.category };
+  }
 
   if (filter.type || (filter.specs && "basecolor" in filter.specs)) {
     query.qty = { $gt: 0 };
@@ -451,7 +455,7 @@ function compileProductQuery(filter, len) {
     }
   }
 
-  if (!len) return query;
+  if (len > 0) delete query.z_index;
 
   return query;
 }
