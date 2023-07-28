@@ -24,12 +24,12 @@
 
         <label class="radio">
           <input type="radio" name="sortPosts" value="-1" <%= sort === -1 ?
-          'checked' : '' %>> Latest
+          'checked' : '' %> data-test="latest"> Latest
         </label>
 
         <label class="radio">
           <input type="radio" name="sortPosts" value="1" <%= sort === 1 ?
-          'checked' : '' %>> Oldest
+          'checked' : '' %> data-test="oldest"> Oldest
         </label>
       </div>
       <!-- END BLOG FILTER -->
@@ -40,7 +40,9 @@
         <a href="/blog/<%= post.href %>" class="box is-clearfix">
           <h1 class="title"><%= post.title %></h1>
           <h2 class="subtitle"><%= post.description %></h2>
-          <p class="is-6 has-text-grey">By <%= post.author %></p>
+          <p class="is-6 has-text-grey">
+            By <span data-test="author"><%= post.author %></span>
+          </p>
           <time
             class="is-6 has-text-grey is-pulled-right"
             datetime="<%= post.mod_dt.toISOString() %>"

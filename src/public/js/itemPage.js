@@ -336,7 +336,7 @@ const itemPage = (function () {
       );
 
       for (const attr of attrs) {
-        const label = node.create("label");
+        const label = node.create("label", { "data-test": attr });
         const span = node.create("span", null, attr);
         const input = node.create("input", {
           type: "radio",

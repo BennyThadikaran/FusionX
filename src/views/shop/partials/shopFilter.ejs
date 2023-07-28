@@ -9,45 +9,78 @@
         <legend class="label is-uppercase">Sort By Price</legend>
         <div class="control">
           <label class="radio" for="sort1">
-            <input type="radio" name="sort" value="-1" id="sort1" />
+            <input
+              type="radio"
+              name="sort"
+              value="-1"
+              id="sort1"
+              data-test="sort-high-low"
+            />
             <span>Highest to Lowest</span>
           </label>
           <label class="radio" for="sort2">
-            <input type="radio" name="sort" value="1" id="sort2" />
+            <input
+              type="radio"
+              name="sort"
+              value="1"
+              id="sort2"
+              data-test="sort-low-high"
+            />
             <span>Lowest to Highest</span>
           </label>
         </div>
       </fieldset>
 
-      <% if (filter.type) { for (const [key, val] of
-      Object.entries(filter.type)) { %>
+      <% if (filter.type) { %>
+      <!-- START for filter.type -->
+      <% for (const [key, val] of Object.entries(filter.type)) { %>
       <fieldset class="field checkbox-btn">
         <legend class="label is-uppercase"><%= key %></legend>
 
         <div class="control">
           <% for (const attr of val) { %>
           <label class="checkbox">
-            <input name="<%= key %>" type="checkbox" value="<%= attr %>" />
+            <input
+              name="<%= key %>"
+              type="checkbox"
+              value="<%= attr %>"
+              data-test="<%= `${key}-${attr}` %>"
+            />
             <span><%= attr %></span>
           </label>
           <% } %>
         </div>
       </fieldset>
-      <% } } if (filter.specs) { for (const [key, val] of
-      Object.entries(filter.specs)) { %>
+      <% } %>
+      <!-- END for filter.type -->
+      <% } %>
+      <!-- END IF filter.type -->
+
+      <!-- START IF filter.specs -->
+      <% if (filter.specs) { %>
+      <!-- START FOR filter.specs -->
+      <% for (const [key, val] of Object.entries(filter.specs)) { %>
       <fieldset class="field checkbox-btn">
         <legend class="label is-uppercase"><%= key %></legend>
 
         <div class="control">
           <% for (const attr of val) { %>
           <label class="checkbox">
-            <input name="<%= key %>" type="checkbox" value="<%= attr %>" />
+            <input
+              name="<%= key %>"
+              type="checkbox"
+              value="<%= attr %>"
+              data-test="<%= `${key}-${attr}` %>"
+            />
             <span><%= attr %></span>
           </label>
           <% } %>
         </div>
       </fieldset>
-      <% } } %>
+      <% } %>
+      <!-- END FOR filter.specs -->
+      <% } %>
+      <!-- END IF filter.specs -->
     </section>
     <footer class="modal-card-foot">
       <button type="submit" class="button is-success">Apply</button>
