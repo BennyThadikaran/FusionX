@@ -6,7 +6,10 @@
   "scripts": {
     "start": "NODE_ENV=production node dist/server",
     "dev": "nodemon server",
-    "build": "git submodule update --init && ./build.sh"
+    "build": "git submodule update --init && ./build.sh",
+    "test:server": "NODE_ENV=test node src/server",
+    "test:run": "cypress run -q",
+    "test": "concurrently npm:test:*"
   },
   "repository": {
     "type": "git",
@@ -42,6 +45,7 @@
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.3",
     "autoprefixer": "^10.4.14",
+    "concurrently": "^8.2.0",
     "cssnano": "^6.0.1",
     "cypress": "^12.14.0",
     "eslint": "^8.32.0",

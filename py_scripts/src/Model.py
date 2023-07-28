@@ -7,9 +7,10 @@ class Model:
     def __init__(self, env_path: Path):
         self.con_string = self._getConnectionString(env_path)
 
-    def connect(self):
+    def connect(self, dbName="fusionx"):
         self.con = MongoClient(self.con_string)
-        self.db = self.con.fusionx
+        self.db = self.con[dbName]
+        return self.db
 
     @staticmethod
     def _getConnectionString(env_path: Path):
