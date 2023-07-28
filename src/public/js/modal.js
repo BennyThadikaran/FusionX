@@ -97,6 +97,7 @@ const modal = (function () {
             {
               class: "cart-item-price currency",
               id: `price-${item.sku}`,
+              "data-test": "cart-price",
             },
             item.price
           ),
@@ -105,6 +106,7 @@ const modal = (function () {
             {
               class: "cart-item-total currency",
               id: `total-${item.sku}`,
+              "data-test": "cart-total",
             },
             total
           ),
@@ -158,7 +160,11 @@ const modal = (function () {
     const header = node.create("div", { class: "modal-card-head" });
     const title = node.create(
       "p",
-      { class: "modal-card-title" },
+      {
+        class: "modal-card-title",
+        id: "cart-title",
+        "data-test": "cart-title",
+      },
       `CART  ( ${items.length} items )`
     );
     const close = node.create("button", {
@@ -188,6 +194,7 @@ const modal = (function () {
       {
         class: "button",
         "data-name": "cartClear",
+        "data-test": "cartClear",
       },
       "Clear"
     );
@@ -204,7 +211,11 @@ const modal = (function () {
         node.create("span", { class: "has-text-grey" }, "SubTotal"),
         node.create(
           "span",
-          { class: "currency", id: "cart-subtotal" },
+          {
+            class: "currency",
+            id: "cart-subtotal",
+            "data-test": "cart-subtotal",
+          },
           subtotal
         ),
       ],

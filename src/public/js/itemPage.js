@@ -336,7 +336,7 @@ const itemPage = (function () {
       );
 
       for (const attr of attrs) {
-        const label = node.create("label");
+        const label = node.create("label", { "data-test": attr });
         const span = node.create("span", null, attr);
         const input = node.create("input", {
           type: "radio",
@@ -521,6 +521,10 @@ const itemPage = (function () {
 
     const btn = document.querySelector(`button[value=${sku}]`);
 
+    document.getElementById(
+      "cart-title"
+    ).textContent = `CART ( ${cart.length} items )`;
+
     if (btn) {
       btn.textContent = btnDefault;
       btn.disabled = false;
@@ -553,6 +557,7 @@ const itemPage = (function () {
 
       body.appendChild(p);
       document.getElementById("cart-subtotal").textContent = 0;
+      document.getElementById("cart-title").textContent = `CART ( 0 items )`;
     }
     store.remove("cart");
 
