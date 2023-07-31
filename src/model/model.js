@@ -1087,63 +1087,68 @@ async function updateGuestOrder(db, dbClientSession, checkout, order) {
         },
       };
 
-      await userCollection.updateOne(
-        { _id: new ObjectId(order.userId) },
-        {
-          $set: {
-            fname: checkout.user.fname,
-            lname: checkout.user.lname,
-            email: checkout.user.email,
-            tel: checkout.user.tel,
-          },
-        }
-      );
+      await Promise.all([
+        userCollection.updateOne(
+          { _id: new ObjectId(order.userId) },
+          {
+            $set: {
+              fname: checkout.user.fname,
+              lname: checkout.user.lname,
+              email: checkout.user.email,
+              tel: checkout.user.tel,
+            },
+          }
+        ),
 
-      await addrCollection.updateOne(
-        { _id: new ObjectId(order.billTo) },
-        {
-          $set: { ...checkout.billTo },
-        }
-      );
+        addrCollection.updateOne(
+          { _id: new ObjectId(order.billTo) },
+          {
+            $set: { ...checkout.billTo },
+          }
+        ),
 
-      if (checkout.shipTo) {
-        // Initial order shipped to same billing address
-        // Now customer has added a different address
-        if (order.billTo === order.shipTo) {
-          let shipToId;
-
-          // check if shipping address already exists
-          const shipToAddr = await addrCollection.find(
-            { hash: checkout.shipTo.hash },
-            { projection: { _id: 1 } }
-          );
-
-          if (await shipToAddr.hasNext()) {
-            shipToId = (await shipToAddr.next())._id;
-          } else {
-            // add the new address if not exists
-            const result = await addrCollection.insertOne(checkout.shipTo);
-            shipToId = result.insertedId;
+        (async () => {
+          if (!checkout.shipTo) {
+            // no shipping address, use bill address id
+            order.shipTo = order.billTo;
+            return;
           }
 
-          order.shipTo = shipToId;
-        } else {
-          // Update the existing shipping address
-          await addrCollection.updateOne(
-            { _id: new ObjectId(order.shipTo) },
-            {
-              $set: { ...checkout.shipTo },
-            }
-          );
-        }
-      } else {
-        // no shipping address, use bill address id
-        order.shipTo = order.billTo;
-      }
+          // Initial order shipped to same billing address
+          // Now customer has added a different address
+          if (order.billTo === order.shipTo) {
+            let shipToId;
 
-      await db
-        .collection("orders")
-        .updateOne({ _id: new ObjectId(order.orderId) }, document);
+            // check if shipping address already exists
+            const shipToAddr = await addrCollection.findOne(
+              { hash: checkout.shipTo.hash },
+              { projection: { _id: 1 } }
+            );
+
+            if (shipToAddr) {
+              shipToId = shipToAddr._id;
+            } else {
+              // add the new address if not exists
+              const result = await addrCollection.insertOne(checkout.shipTo);
+              shipToId = result.insertedId;
+            }
+
+            order.shipTo = shipToId;
+          } else {
+            // Update the existing shipping address
+            await addrCollection.updateOne(
+              { _id: new ObjectId(order.shipTo) },
+              {
+                $set: { ...checkout.shipTo },
+              }
+            );
+          }
+        })(),
+
+        db
+          .collection("orders")
+          .updateOne({ _id: new ObjectId(order.orderId) }, document),
+      ]);
     }, transactionOptions);
   } catch (e) {
     logger.error(e);
