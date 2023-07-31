@@ -39,21 +39,30 @@ class ProductFilter {
   static async init(db, category) {
     const cls = new ProductFilter();
     const query = category ? { sku: { $regex: category } } : {};
-    const specs = await getDistinct(db, "product_variants", "specs", query);
-    const types = await getDistinct(db, "product_variants", "type", query);
 
-    for (const spec of specs) {
-      if (!Object.hasOwn(cls.specs, spec.k)) cls.specs[spec.k] = [];
-      cls.specs[spec.k].push(spec.v);
-      cls.specsLength += 1;
-    }
+    await Promise.all([
+      (async () => {
+        const specs = await getDistinct(db, "product_variants", "specs", query);
 
-    for (const type of types) {
-      if (type.k === "color") continue;
-      if (!Object.hasOwn(cls.type, type.k)) cls.type[type.k] = [];
-      cls.type[type.k].push(type.v);
-      cls.typeLength += 1;
-    }
+        for (const spec of specs) {
+          if (!Object.hasOwn(cls.specs, spec.k)) cls.specs[spec.k] = [];
+          cls.specs[spec.k].push(spec.v);
+          cls.specsLength += 1;
+        }
+      })(),
+
+      (async () => {
+        const types = await getDistinct(db, "product_variants", "type", query);
+
+        for (const type of types) {
+          if (type.k === "color") continue;
+          if (!Object.hasOwn(cls.type, type.k)) cls.type[type.k] = [];
+          cls.type[type.k].push(type.v);
+          cls.typeLength += 1;
+        }
+      })(),
+    ]);
+
     return cls;
   }
 

@@ -1,5 +1,6 @@
 const securityHeaders = (req, res, next) => {
-  const csp = `default-src 'self'; frame-src 'none'; img-src 'self' ${req.app.locals.imgUrl}; report-uri /csp;`;
+  const imgURl = new URL(req.app.locals.imgUrl).origin;
+  const csp = `default-src 'self'; frame-src 'none'; img-src 'self' ${imgURl}; report-uri /csp;`;
 
   res.set({
     // use secure https
