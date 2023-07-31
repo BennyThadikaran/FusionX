@@ -758,7 +758,8 @@ async function syncCartItems(db, userId, sessionCart) {
 
   if (dbCart === null) return false;
 
-  let itemsToInsert = [];
+  const itemsToInsert = [];
+  const promiseArray = [];
 
   if (dbCart.length) {
     // sync items
@@ -770,7 +771,7 @@ async function syncCartItems(db, userId, sessionCart) {
         if (dbItem.qty === item.qty) continue;
 
         // if items exists and qty is different, update the qty
-        await updateCartItem(db, userId, item.sku, item.qty);
+        promiseArray.push(updateCartItem(db, userId, item.sku, item.qty));
         continue;
       }
       // if item does not exist we add it together
@@ -788,10 +789,9 @@ async function syncCartItems(db, userId, sessionCart) {
     item.userId = new ObjectId(userId);
   });
 
-  const [err] = await to(
-    db.collection("cart").insertMany(itemsToInsert),
-    logger
-  );
+  promiseArray.push(db.collection("cart").insertMany(itemsToInsert));
+
+  const [err] = await to(Promise.all(promiseArray), logger);
 
   if (err) return false;
 
