@@ -923,7 +923,7 @@ async function clearCart(db, userId) {
  * @return {Promise.Array} [result, orderId]
  */
 async function createGuestOrder(db, dbClientSession, checkout, provider) {
-  let order;
+  const order = {};
 
   try {
     await dbClientSession.withTransaction(async () => {
@@ -949,96 +949,102 @@ async function createGuestOrder(db, dbClientSession, checkout, provider) {
         },
       };
 
-      // check if user exists by email
-      const userCursor = await userCollection.find(
-        { email: checkout.user.email },
-        { _id: 1, tel: 1 }
-      );
-
-      // if user exists
-      if (await userCursor.hasNext()) {
-        const user = await userCursor.next();
-
-        // update the telephone number if not exists or different from one provided
-        if (!user.tel || user.tel !== checkout.user.tel) {
-          await userCollection.updateOne(
-            { _id: user._id },
-            { $set: { tel: checkout.user.tel } }
+      await Promise.all([
+        (async () => {
+          // check if user exists by email
+          const user = await userCollection.findOne(
+            { email: checkout.user.email },
+            { projection: { _id: 1, tel: 1 } }
           );
-        }
 
-        // add userId to order document
-        document.userId = user._id;
-      } else {
-        // no user exists, add one
-        const result = await userCollection.insertOne({
-          fname: checkout.user.fname,
-          lname: checkout.user.lname,
-          email: checkout.user.email,
-          tel: checkout.user.tel,
-        });
+          // if user exists
+          if (user) {
+            /* update the telephone number if not exists or different from one
+            provided */
+            if (!user.tel || user.tel !== checkout.user.tel) {
+              await userCollection.updateOne(
+                { _id: user._id },
+                { $set: { tel: checkout.user.tel } }
+              );
+            }
 
-        // update the userId in order document
-        document.userId = result.insertedId;
-      }
+            // add userId to order document
+            document.userId = user._id;
+          } else {
+            // no user exists, add one
+            const result = await userCollection.insertOne({
+              fname: checkout.user.fname,
+              lname: checkout.user.lname,
+              email: checkout.user.email,
+              tel: checkout.user.tel,
+            });
 
-      // set isDefault for all user addresses to false
-      await addrCollection.updateMany(
-        { userId: document.userId },
-        { $set: { isDefault: false } }
-      );
+            // update the userId in order document
+            document.userId = result.insertedId;
+          }
+        })(),
 
-      let billToId;
-      let shipToId;
+        // set isDefault for all user addresses to false
+        addrCollection.updateMany(
+          { userId: document.userId },
+          { $set: { isDefault: false } }
+        ),
+      ]);
 
-      // check if billing address is stored by hash
-      const billToAddr = await addrCollection.find(
-        { userId: document.userId, hash: checkout.billTo.hash },
-        { projection: { _id: 1 } }
-      );
+      order.userId = document.userId;
 
-      if (await billToAddr.hasNext()) {
-        billToId = (await billToAddr.next())._id;
+      const [orderResult] = await Promise.all([
+        db.collection("orders").insertOne(document),
 
-        // set the current address as default billing address
-        await addrCollection.updateOne(
-          { _id: billToId },
-          { $set: { isDefault: true } }
-        );
-      } else {
-        checkout.billTo.userId = document.userId;
-        const result = await addrCollection.insertOne(checkout.billTo);
-        billToId = result.insertedId;
-      }
+        (async () => {
+          let billToId;
+          let shipToId;
 
-      // if shiping address same as billing address
-      shipToId = billToId;
+          // check if billing address is stored by hash
+          const billToAddr = await addrCollection.findOne(
+            { userId: document.userId, hash: checkout.billTo.hash },
+            { projection: { _id: 1 } }
+          );
 
-      // if shipping address is different from billing
-      if (checkout.shipTo) {
-        // check if shipping address is stored by hash
-        const shipToAddr = await addrCollection.find(
-          { userId: document.userId, hash: checkout.shipTo.hash },
-          { projection: { _id: 1 } }
-        );
+          if (billToAddr) {
+            billToId = billToAddr._id;
 
-        if (await shipToAddr.hasNext()) {
-          shipToId = (await shipToAddr.next())._id;
-        } else {
-          checkout.shipTo.userId = document.userId;
-          const result = await addrCollection.insertOne(checkout.shipTo);
-          shipToId = result.insertedId;
-        }
-      }
+            // set the current address as default billing address
+            await addrCollection.updateOne(
+              { _id: billToId },
+              { $set: { isDefault: true } }
+            );
+          } else {
+            checkout.billTo.userId = document.userId;
+            const result = await addrCollection.insertOne(checkout.billTo);
+            billToId = result.insertedId;
+          }
 
-      const result = await db.collection("orders").insertOne(document);
+          // if shiping address same as billing address
+          shipToId = billToId;
 
-      order = {
-        userId: document.userId,
-        orderId: result.insertedId,
-        billTo: billToId,
-        shipTo: shipToId,
-      };
+          // if shipping address is different from billing
+          if (checkout.shipTo) {
+            // check if shipping address is stored by hash
+            const shipToAddr = await addrCollection.findOne(
+              { userId: document.userId, hash: checkout.shipTo.hash },
+              { projection: { _id: 1 } }
+            );
+
+            if (shipToAddr) {
+              shipToId = shipToAddr._id;
+            } else {
+              checkout.shipTo.userId = document.userId;
+              const result = await addrCollection.insertOne(checkout.shipTo);
+              shipToId = result.insertedId;
+            }
+          }
+          order.billTo = billToId;
+          order.shipTo = shipToId;
+        })(),
+      ]);
+
+      order.orderId = orderResult.insertedId;
     }, transactionOptions);
   } catch (e) {
     logger.error(e);
