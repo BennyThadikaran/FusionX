@@ -685,11 +685,11 @@ async function getProductVariants(db, sku) {
  * Reserves products quantity for user during the checkout process.
  * @param {Db} db
  * @param {String} sessionId session id
- * @param {String} sku item sku
- * @param {Number} qty item quantity
+ * @param {object} item item object
  * @return {Promise.<Array>} [err, result]
  */
-async function reserveProductsForCheckout(db, sessionId, sku, qty) {
+async function reserveProductsForCheckout(db, sessionId, item) {
+  const { sku, qty } = item;
   const [, result] = await to(
     db.collection("product_variants").updateOne(
       { sku, qty: { $gte: qty } },
@@ -700,7 +700,7 @@ async function reserveProductsForCheckout(db, sessionId, sku, qty) {
     ),
     logger
   );
-  return result;
+  return [result, item];
 }
 
 /**
