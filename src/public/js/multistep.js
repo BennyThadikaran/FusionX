@@ -27,8 +27,6 @@ const multistep = (function () {
     showTab(currTab);
 
     next.addEventListener("click", async () => {
-      window.scrollTo(0, 0);
-
       if (
         cbNext &&
         cbNext instanceof Function &&
@@ -36,6 +34,7 @@ const multistep = (function () {
       )
         return;
 
+      window.scrollTo(0, 0);
       currStep++;
       currTab++;
 

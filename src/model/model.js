@@ -1541,8 +1541,10 @@ async function getOffers(db) {
 async function getPostalData(db, code) {
   if (cache.has(code)) return cache.get(code);
 
-  const collection = db.collection("pincodes");
-  let [err, result] = await to(collection.findOne({ Pincode: code }), logger);
+  let [err, result] = await to(
+    db.collection("pincodes").findOne({ Pincode: code }),
+    logger
+  );
 
   if (!err && result) {
     cache.set(code, result);
@@ -1551,11 +1553,10 @@ async function getPostalData(db, code) {
 
   result = await fetchPostalData(code);
 
-  if (!result instanceof Error) {
-    cache.set(code, result.message, 24 * 60 * 60);
-    collection.insertOne(result.message);
-  }
+  if (result instanceof Error) return result;
 
+  cache.set(code, result, 24 * 60 * 60);
+  collection.insertOne(result);
   return result;
 }
 

@@ -304,7 +304,7 @@ const postGuestCheckout = async (req, res) => {
     const freeShipOffer = offers.find((offer) => offer.code === "SHIPFREE");
     const isIntraState = billTo.state.toUpperCase() === req.app.locals.state;
 
-    const [, checkout] = prepItemsForCheckout(
+    const checkout = prepItemsForCheckout(
       { ...req.session.checkout, user: { fname, lname, email, tel }, billTo },
       freeShipOffer,
       isIntraState

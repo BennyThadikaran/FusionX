@@ -15,6 +15,22 @@ echo -n 'import "../css/style.css"
 import "../css/sprite.css"
 ' > $MAIN_JS;
 
+exec node <<EOF
+const { writeFile } = require("fs");
+const config = require("./src/appConfig.js");
+
+writeFile(
+  "./src/public/js/variables.js",
+  \`export const imgUrl = "\${config.imgUrl}";
+export const shopListLimit = \${config.shopListLimit};
+export const blogListLimit = \${config.blogListLimit};
+export const commentListLimit = \${config.commentListLimit};\`,
+  (err) => {
+    if (err) throw err;
+  }
+);
+EOF
+
 # Append app.js contents to main.js
 # app.js is the main module for our frontend js
 cat src/public/js/app.js >> $MAIN_JS;

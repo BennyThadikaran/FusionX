@@ -194,7 +194,7 @@ function prepItemsForCheckout(checkoutObj, offer, isIntraState) {
   const subtotal = checkoutObj.items.reduce((a, b) => a + b.total, 0);
   const total = subtotal + shipping;
 
-  const checkout = {
+  let checkout = {
     ...checkoutObj,
     shipping,
     subtotal,
@@ -204,7 +204,11 @@ function prepItemsForCheckout(checkoutObj, offer, isIntraState) {
     appliedOffers: checkoutObj.appliedOffers || [],
   };
 
-  return offer ? applyOfferToCheckout(offer, checkout, isIntraState) : checkout;
+  if (offer) {
+    [, checkout] = applyOfferToCheckout(offer, checkout, isIntraState);
+  }
+
+  return checkout;
 }
 
 /**

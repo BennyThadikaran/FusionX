@@ -1,17 +1,15 @@
-const isTestEnviron = process.env.NODE_ENV === "test";
-
-module.exports = {
+const config = {
   // mongodb config
   mongoOptions: { compressors: "zstd" },
-  dbName: isTestEnviron ? "fusionx_test" : "fusionx", // mongodb database name
+  dbName: "fusionx", // mongodb database name
   registeredState: "MAHARASHTRA", // ** IMP ** State from which goods are supplied
   paymentProvider: "FakePay", // Payment gateway provider name
   pwdInputs: [], // inputs passed to zxcvbn eg. site name or site specific tags
 
   // pagination count
-  blogListLimit: isTestEnviron ? 8 : 10, // for blog posts
-  shopListLimit: isTestEnviron ? 8 : 10, // for shop items
-  commentListLimit: isTestEnviron ? 8 : 10, // for blog post comments
+  blogListLimit: 10, // for blog posts
+  shopListLimit: 10, // for shop items
+  commentListLimit: 10, // for blog post comments
 
   // in production other options include Cloudinary, aws, filestack etc.
   imgUrl: "https://placehold.co", // base url for loading images.
@@ -73,3 +71,12 @@ module.exports = {
     },
   },
 };
+
+if (process.env.NODE_ENV === "test") {
+  config.dbName = "fusionx_test";
+  config.blogListLimit = 8;
+  config.shopListLimit = 8;
+  config.commentListLimit = 8;
+}
+
+module.exports = config;
