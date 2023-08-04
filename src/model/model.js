@@ -1541,10 +1541,9 @@ async function getOffers(db) {
 async function getPostalData(db, code) {
   if (cache.has(code)) return cache.get(code);
 
-  let [err, result] = await to(
-    db.collection("pincodes").findOne({ Pincode: code }),
-    logger
-  );
+  const collection = db.collection("pincodes");
+
+  let [err, result] = await to(collection.findOne({ Pincode: code }), logger);
 
   if (!err && result) {
     cache.set(code, result);
@@ -1646,21 +1645,23 @@ async function setDefaultBillingAddress(
   try {
     await dbClientSession.withTransaction(async () => {
       const addressCollection = db.collection("addresses");
-      const result1 = await addressCollection.updateOne(
-        { userId: new ObjectId(userId), isDefault: true },
-        { $set: { isDefault: false } }
-      );
 
-      if (result1.modifiedCount === 0) {
+      const updateResult = await Promise.all([
+        addressCollection.updateOne(
+          { userId: new ObjectId(userId), isDefault: true },
+          { $set: { isDefault: false } }
+        ),
+        addressCollection.updateOne(
+          { _id: new ObjectId(addressId), userId: new ObjectId(userId) },
+          { $set: { isDefault: true } }
+        ),
+      ]);
+
+      if (updateResult[0].modifiedCount === 0) {
         throw Error("Update isDefault to false failed");
       }
 
-      const result2 = await addressCollection.updateOne(
-        { _id: new ObjectId(addressId), userId: new ObjectId(userId) },
-        { $set: { isDefault: true } }
-      );
-
-      if (result2.modifiedCount === 0) {
+      if (updateResult[1].modifiedCount === 0) {
         throw Error("Update isDefault to true failed");
       }
     }, transactionOptions);
