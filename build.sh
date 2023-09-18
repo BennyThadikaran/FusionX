@@ -15,7 +15,7 @@ echo -n 'import "../css/style.css"
 import "../css/sprite.css"
 ' > $MAIN_JS;
 
-exec node <<EOF
+$(exec node <<EOF
 const { writeFile } = require("fs");
 const config = require("./src/appConfig.js");
 
@@ -30,6 +30,7 @@ export const commentListLimit = \${config.commentListLimit};\`,
   }
 );
 EOF
+);
 
 # Append app.js contents to main.js
 # app.js is the main module for our frontend js
