@@ -7,6 +7,8 @@ const pino = require("pino");
 const { MongoClient } = require("mongodb");
 const MongoStore = require("connect-mongo");
 const cors = require("cors");
+const { getProductCategories } = require(join(__dirname, "model", "model.js"));
+const { getProductCategoryMap } = require(join(__dirname, "services", "utils"));
 
 require("dotenv").config({ path: join(__dirname, ".env") });
 
@@ -36,7 +38,12 @@ const client = new MongoClient(process.env.MONGO_CONN_STRING, config.mongo);
 
 (async () => {
   await client.connect();
-  app.set("db", client.db(config.dbName));
+  const db = client.db(config.dbName);
+  app.locals.productCategories = await getProductCategories(db);
+
+  app.locals.productMap = getProductCategoryMap(app.locals.productCategories);
+
+  app.set("db", db);
   app.set("dbClient", client);
   const port = process.env.PORT || 3000;
 

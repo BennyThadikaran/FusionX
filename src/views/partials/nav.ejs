@@ -28,94 +28,34 @@
 
         <!-- SHOP DROPDOWN -->
         <div class="navbar-dropdown">
-          <!-- MENS TOP LEVEL -->
+          <% for (const category of productCategories) { %>
+          <!-- Top Level Categories -->
           <div class="navbar-submenu">
             <a
               aria-controls="mx-dropdown-menu"
               class="navbar-submenu-link"
               data-name="navbar"
             >
-              <div class="navbar-item navbar-link">Mens</div>
+              <div class="navbar-item navbar-link"><%= category._id %></div>
             </a>
-            <!-- MENS SUBMENU -->
+            <!-- SUBMENU -  -->
             <div
               class="navbar-submenu-dropdown"
               role="menu"
               id="mx-dropdown-menu"
             >
-              <a href="/shop?category=camxts" class="navbar-item">T Shirts</a>
-              <a href="/shop?category=camxho" class="navbar-item">Hoodies</a>
-              <a href="/shop?category=camxsh" class="navbar-item">Shorts</a>
-              <a href="/shop?category=camxtp" class="navbar-item"
-                >Track Pants</a
+              <!-- SUB CATEGORY -->
+              <% for (const item of category.items) { %>
+              <a href="/shop?category=<%= item.code %>" class="navbar-item"
+                ><%= item.subcategory %></a
               >
-              <a href="/shop?category=camxas" class="navbar-item"
-                >Athletic Socks</a
-              >
+              <% } %>
+              <!-- END SUB CATEGORY -->
             </div>
-            <!-- END MENS SUBMENU -->
+            <!-- END SUBMENU -->
           </div>
-          <!-- END MENS TOP LEVEL -->
-
-          <!-- WOMENS TOP LEVEL -->
-          <div class="navbar-submenu">
-            <a
-              aria-controls="wx-dropdown-menu"
-              class="navbar-submenu-link"
-              data-name="navbar"
-            >
-              <div class="navbar-item navbar-link">Womens</div>
-            </a>
-            <!-- WOMENS SUBMENU -->
-            <div
-              class="navbar-submenu-dropdown"
-              role="menu"
-              id="wx-dropdown-menu"
-            >
-              <a href="/shop?category=cawxts" class="navbar-item">T Shirts</a>
-              <a href="/shop?category=cawxsh" class="navbar-item">Shorts</a>
-              <a href="/shop?category=cawxtp" class="navbar-item"
-                >Track Pants</a
-              >
-              <a href="/shop?category=cawxas" class="navbar-item"
-                >Athletic Socks</a
-              >
-              <a href="/shop?category=cawxaw" class="navbar-item"
-                >Active Wear</a
-              >
-            </div>
-            <!-- END WOMENS SUBMENU -->
-          </div>
-          <!-- END WOMENS TOP LEVEL -->
-
-          <!-- EXERCISE TOP LEVEL -->
-          <div class="navbar-submenu">
-            <a
-              aria-controls="ef-dropdown-menu"
-              class="navbar-submenu-link"
-              data-name="navbar"
-            >
-              <div class="navbar-item navbar-link">Exercise & Fitness</div>
-            </a>
-            <!-- EXERCISE SUBMENU -->
-            <div
-              class="navbar-submenu-dropdown"
-              role="menu"
-              id="ef-dropdown-menu"
-            >
-              <a href="/shop?category=efacfr" class="navbar-item"
-                >Foam Rollers</a
-              >
-              <a href="/shop?category=efacrb" class="navbar-item"
-                >Resistance Bands</a
-              >
-              <a href="/shop?category=efacrt" class="navbar-item"
-                >Resistance Tubes</a
-              >
-            </div>
-            <!-- END EXERCISE SUBMENU -->
-          </div>
-          <!-- END EXERCISE TOP LEVEL -->
+          <% } %>
+          <!-- END TOP LEVEL -->
         </div>
         <!-- END SHOP DROPDOWN -->
       </div>

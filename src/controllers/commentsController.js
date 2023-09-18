@@ -58,7 +58,7 @@ const postComment = async (req, res) => {
   }
 
   const db = req.app.get("db");
-  const result = await addBlogComment(
+  const [, result] = await addBlogComment(
     db,
     req.params.postId,
     req.session.userId,
@@ -125,7 +125,7 @@ const editComment = async (req, res) => {
     return res.json({ status: "error", data: req.errors });
   }
 
-  const result = await editBlogComment(
+  const [, result] = await editBlogComment(
     req.app.get("db"),
     req.params.commentId,
     req.session.userId,
@@ -160,7 +160,7 @@ const getComments = async (req, res) => {
     req.app.locals.commentListLimit
   );
 
-  const commentCount = await getBlogCommentsCount(db, postId);
+  const [, commentCount] = await getBlogCommentsCount(db, postId);
 
   if (comments === null) {
     return res.json({ status: "error", data: errResponse });

@@ -6,7 +6,7 @@ const { createHash } = require("crypto");
 /**
  * @param {Promise} promise
  * @param {Pino} logger
- * @return {Array.<err, data>}
+ * @return {array}
  */
 function to(promise, logger) {
   return promise
@@ -19,32 +19,32 @@ function to(promise, logger) {
 
 /**
  * Round a number to nearest 0.5
- * @param {Number} num
- * @return {Number}
+ * @param {number} num
+ * @return {number}
  */
 function roundHalf(num) {
   return Math.round(num * 2) / 2;
 }
 /**
  * Generates a sha1 hash of the given text
- * @param {String} text input string
- * @return {String} generated sha1 hash
+ * @param {string} text input string
+ * @return {string} generated sha1 hash
  */
 function sha1hash(text) {
   return createHash("sha1").update(text).digest("hex");
 }
 
 /**
- * @param {Object} addr address object
- * @return {String} generated sha1 hash
+ * @param {object} addr address object
+ * @return {string} generated sha1 hash
  */
 function getAddressHash(addr) {
   return sha1hash(`${addr.name},${addr.address},${addr.postalCode}`);
 }
 
 /**
- * @param {Object} checkout
- * @return {String} generated sha1 hash
+ * @param {object} checkout
+ * @return {string} generated sha1 hash
  */
 function getCheckoutHash(checkout) {
   const { fname, lname, email, tel } = checkout.user;
@@ -65,8 +65,8 @@ function getCheckoutHash(checkout) {
 
 /**
  * Generate keywords from password string to pass to zxcvbn
- * @param {String} str
- * @return {Array.<String>} Returns empty array if not keywords found
+ * @param {string} str
+ * @return {array.string} Returns empty array if not keywords found
  */
 function generateTokens(str) {
   "use strict";
@@ -85,11 +85,11 @@ function generateTokens(str) {
 
 /**
  *  Check password strength with zxcvbn
- *  @param {String} pwd password to check strength against
- *  @param {String} [oldPwd = null] Use old password as input to zxcvbn while
+ *  @param {string} pwd password to check strength against
+ *  @param {string} [oldPwd = null] Use old password as input to zxcvbn while
  *  calculating password strength
- *  @param {Array.<String>} [inputs=[]]
- *  @return {Integer}
+ *  @param {array.string} [inputs=[]]
+ *  @return {number}
  */
 function checkPwdStrength(pwd, oldPwd = null, inputs = []) {
   // add any other inputs like website name, and other guessable keywords
@@ -101,8 +101,8 @@ function checkPwdStrength(pwd, oldPwd = null, inputs = []) {
 
 /**
  * calculates the shipment time for the order
- * @param {String} originState
- * @param {String} destinationState
+ * @param {string} originState
+ * @param {string} destinationState
  * @return {Date}
  */
 function getShipmentTime(originState, destinationState) {
@@ -136,8 +136,8 @@ function getShipmentTime(originState, destinationState) {
 
 /**
  * Calculates shipping cost based on region
- * @param {String} state
- * @return {Number} shipping cost
+ * @param {string} state
+ * @return {number} shipping cost
  */
 function getShippingCost(state) {
   state = state.toUpperCase();
@@ -163,8 +163,8 @@ function getShippingCost(state) {
 
 /**
  * Calculate the gst on item object
- * @param {Object} item
- * @param {Boolean} isIntraState
+ * @param {object} item
+ * @param {boolean} isIntraState
  */
 function addGst(item, isIntraState) {
   item.total = item.price * item.qty - (item.discount || 0);
@@ -175,10 +175,10 @@ function addGst(item, isIntraState) {
 }
 
 /**
- * @param {Object} checkoutObj
- * @param {Object | undefined} offer
- * @param {Boolean} isIntraState
- * @return {Object} checkout object
+ * @param {object} checkoutObj
+ * @param {object | undefined} offer
+ * @param {boolean} isIntraState
+ * @return {object} checkout object
  */
 function prepItemsForCheckout(checkoutObj, offer, isIntraState) {
   const state = checkoutObj.billTo.state;
@@ -212,10 +212,10 @@ function prepItemsForCheckout(checkoutObj, offer, isIntraState) {
 }
 
 /**
- * @param {Object} offer
- * @param {Object} checkout
- * @param {Boolean} isIntraState
- * @return {Object}
+ * @param {object} offer
+ * @param {object} checkout
+ * @param {boolean} isIntraState
+ * @return {object}
  */
 function applyOfferToCheckout(offer, checkout, isIntraState) {
   if (offer.type === "SHIP") {
@@ -283,8 +283,8 @@ function applyOfferToCheckout(offer, checkout, isIntraState) {
 
 /**
  * Makes a request to api.postalpincode.in for pincode data
- * @param {String} pincode 6 character pincode
- * @return {Promise.Object}
+ * @param {string} pincode 6 character pincode
+ * @return {Promise.object}
  */
 function fetchPostalData(pincode) {
   return new Promise((resolve, reject) => {
@@ -309,6 +309,20 @@ function fetchPostalData(pincode) {
   });
 }
 
+/**
+ * @param {array} categories
+ * @return {object}
+ */
+function getProductCategoryMap(categories) {
+  const map = {};
+  categories.forEach((category) => {
+    category.items.forEach((item) => {
+      map[item.code] = item.desc;
+    });
+  });
+  return map;
+}
+
 module.exports = {
   to,
   roundHalf,
@@ -321,4 +335,5 @@ module.exports = {
   prepItemsForCheckout,
   applyOfferToCheckout,
   fetchPostalData,
+  getProductCategoryMap,
 };

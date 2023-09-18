@@ -443,13 +443,13 @@ const getUserCheckout = async (req, res) => {
   const db = req.app.get("db");
   const userId = req.session.userId;
 
-  const items = await getCartItems(db, userId);
+  const [, items] = await getCartItems(db, userId);
 
   if (!items) return res.sendStatus(500);
 
   if (!items.length) return res.redirect("/");
 
-  req.session.user = await getUserById(db, userId);
+  [, req.session.user] = await getUserById(db, userId);
 
   // An array to store items which are out of stock or insufficient quantity
   const errorItems = [];
@@ -524,7 +524,7 @@ const getUserCheckout = async (req, res) => {
   ) {
     // if an order has been settled in the session,
     // update the address list of the user
-    const result = await getAddressesByUserId(db, req.session.userId);
+    const [, result] = await getAddressesByUserId(db, req.session.userId);
 
     if (!result) return res.sendStatus(500);
 
