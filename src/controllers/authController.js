@@ -54,7 +54,7 @@ const login = async (req, res) => {
   const logger = req.app.get("log");
   setLogger(logger);
 
-  const user = await getUserByEmail(db, email);
+  const [, user] = await getUserByEmail(db, email);
 
   const notRegistered =
     "You haven't registered. Use the signup button to create an account.";
@@ -83,7 +83,7 @@ const login = async (req, res) => {
     if (!syncResult) return res.json({ status: "error", data: internalError });
   }
 
-  cart = await getCartItems(db, user._id);
+  [, cart] = await getCartItems(db, user._id);
 
   // regenerate the session to prevent session fixation
   req.session.regenerate(function (err) {
@@ -215,7 +215,7 @@ const signup = async (req, res) => {
 
   const db = req.app.get("db");
 
-  const user = await getUserByEmail(db, email);
+  const [, user] = await getUserByEmail(db, email);
 
   if (user && user.hash) {
     return res.json({ status: "error", data: "You are already registered." });
@@ -231,9 +231,9 @@ const signup = async (req, res) => {
   let result;
 
   if (user) {
-    result = await updateUserById(db, user._id, { fname, lname, hash });
+    [, result] = await updateUserById(db, user._id, { fname, lname, hash });
   } else {
-    result = await addUser(db, { fname, lname, email, hash });
+    [, result] = await addUser(db, { fname, lname, email, hash });
   }
 
   if (result.acknowledged)
@@ -282,7 +282,7 @@ const reset = async (req, res) => {
 
   const userId = req.session.userId;
   const db = req.app.get("db");
-  const user = await getUserById(db, userId, { hash: 1 });
+  const [, user] = await getUserById(db, userId, { hash: 1 });
   let hash;
 
   const pwdMismatchError = "Current password is not correct.";
@@ -304,7 +304,7 @@ const reset = async (req, res) => {
 
   if (err) return res.json({ status: "error", data: errResponse });
 
-  const result = await updateUserById(db, userId, { hash });
+  const [, result] = await updateUserById(db, userId, { hash });
 
   if (!result) return res.json({ status: "error", data: errResponse });
 

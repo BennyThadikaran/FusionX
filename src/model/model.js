@@ -39,28 +39,37 @@ class ProductFilter {
   static async init(db, category) {
     const cls = new ProductFilter();
     const query = category ? { sku: { $regex: category } } : {};
-    const specs = await getDistinct(db, "product_variants", "specs", query);
-    const types = await getDistinct(db, "product_variants", "type", query);
 
-    for (const spec of specs) {
-      if (!Object.hasOwn(cls.specs, spec.k)) cls.specs[spec.k] = [];
-      cls.specs[spec.k].push(spec.v);
-      cls.specsLength += 1;
-    }
+    await Promise.all([
+      (async () => {
+        const specs = await getDistinct(db, "product_variants", "specs", query);
 
-    for (const type of types) {
-      if (type.k === "color") continue;
-      if (!Object.hasOwn(cls.type, type.k)) cls.type[type.k] = [];
-      cls.type[type.k].push(type.v);
-      cls.typeLength += 1;
-    }
+        for (const spec of specs) {
+          if (!Object.hasOwn(cls.specs, spec.k)) cls.specs[spec.k] = [];
+          cls.specs[spec.k].push(spec.v);
+          cls.specsLength += 1;
+        }
+      })(),
+
+      (async () => {
+        const types = await getDistinct(db, "product_variants", "type", query);
+
+        for (const type of types) {
+          if (type.k === "color") continue;
+          if (!Object.hasOwn(cls.type, type.k)) cls.type[type.k] = [];
+          cls.type[type.k].push(type.v);
+          cls.typeLength += 1;
+        }
+      })(),
+    ]);
+
     return cls;
   }
 
   /**
    * Parse the query params and return sanitized query object
-   * @param {Object} query express.js query params object
-   * @return {Object}
+   * @param {object} query express.js query params object
+   * @return {object}
    */
   parseQueryString(query) {
     const sanitized = {
@@ -110,8 +119,8 @@ class ProductFilter {
    * Get the category specific filters to be used for filtering products
    * client side
    * @param {Db} db
-   * @param {String} category
-   * @return {Object}
+   * @param {string} category
+   * @return {object}
    */
   getFilters() {
     const filter = {};
@@ -127,10 +136,10 @@ class ProductFilter {
 /**
  * Get all blog posts
  * @param {Db} db An instance of mongodb Db
- * @param {Number} limit max number of items to return
- * @param {Object} [query={}] query string object
- * @param {Number} [sort=-1] descending -1, ascending 1
- * @return {Promise.<Array>} [err, data]
+ * @param {number} limit max number of items to return
+ * @param {object} [query={}] query string object
+ * @param {number} [sort=-1] descending -1, ascending 1
+ * @return {Promise.array} [err, WithId]
  */
 async function getBlogPosts(db, limit, query = {}, sort = -1) {
   const key = `posts_${limit}_${sort}_${Object.values(query).join("_")}`;
@@ -178,9 +187,9 @@ async function getBlogPosts(db, limit, query = {}, sort = -1) {
 /**
  * Get blog post by href
  * @param {Db} db
- * @param {String} href
- * @param {Object} [projection=null]
- * @return {Promise.<Array>} [err, result]
+ * @param {string} href
+ * @param {object} [projection=null]
+ * @return {Promise.array} [err, result]
  */
 async function getBlogPost(db, href, projection = null) {
   const cacheable = !projection; // cache is projection is null
@@ -234,14 +243,15 @@ async function getBlogPost(db, href, projection = null) {
 /**
  * Add Blog post comment to db
  * @param {Db} db
- * @param {String} postId
- * @param {String} userId
- * @param {String} name
- * @param {String} commentText
- * @param {String} replyId
- * @param {String} replyName
+ * @param {string} postId
+ * @param {string} userId
+ * @param {string} name
+ * @param {string} commentText
+ * @param {string} replyId
+ * @param {string} replyName
+ * @return {Promise}
  */
-async function addBlogComment(
+function addBlogComment(
   db,
   postId,
   userId,
@@ -270,17 +280,17 @@ async function addBlogComment(
     };
   }
 
-  const [, result] = await to(db.collection("comments").insertOne(doc), logger);
-  return result;
+  return to(db.collection("comments").insertOne(doc), logger);
 }
 
 /**
  * @param {Db} db
- * @param {String} commentId
- * @param {String} userId
- * @param {String} commentText
+ * @param {string} commentId
+ * @param {string} userId
+ * @param {string} commentText
+ * @return {Promise.array}
  */
-async function editBlogComment(db, commentId, userId, commentText) {
+function editBlogComment(db, commentId, userId, commentText) {
   const doc = { $set: { commentText } };
 
   const filter = {
@@ -288,19 +298,15 @@ async function editBlogComment(db, commentId, userId, commentText) {
     userId: new ObjectId(userId),
   };
 
-  const [, result] = await to(
-    db.collection("comments").updateOne(filter, doc),
-    logger
-  );
-  return result;
+  return to(db.collection("comments").updateOne(filter, doc), logger);
 }
 
 /**
  * @param {Db} db
- * @param {String} [sort=desc] asc or desc
- * @param {String} postId blog post id
- * @param {String} commentId
- * @param {Number} limit number of comments to return
+ * @param {string} [sort=desc] asc or desc
+ * @param {string} postId blog post id
+ * @param {string} commentId
+ * @param {number} limit number of comments to return
  */
 async function getBlogComments(db, sort, postId, commentId, limit) {
   const key = `blogComments_${postId}_${sort}_${commentId}`;
@@ -334,22 +340,21 @@ async function getBlogComments(db, sort, postId, commentId, limit) {
 /**
  * @param {Db} db
  * @param {string} postId blog post id
- * @return {Promise.<number>}
+ * @return {Promise.array} [err, number]
  */
-async function getBlogCommentsCount(db, postId) {
-  const [, result] = await to(
+function getBlogCommentsCount(db, postId) {
+  return to(
     db.collection("comments").countDocuments({ postId: new ObjectId(postId) }),
     logger
   );
-  return result;
 }
 
 /**
  *
- * @param {Object} filter Object returned by <BaseFilter>.parseQueryString
- * @param {Number} limit Number of documents to return
- * @param {Number} len max length of keys in filter.specs and filter.type
- * @return {Promise.<Array>} pipeline array to pass to collection.aggregate
+ * @param {object} filter Object returned by <BaseFilter>.parseQueryString
+ * @param {number} limit Number of documents to return
+ * @param {number} len max length of keys in filter.specs and filter.type
+ * @return {array} pipeline array to pass to collection.aggregate
  */
 function compileProductPipeline(filter, limit, len) {
   const pipeline = [];
@@ -422,9 +427,9 @@ function compileProductPipeline(filter, limit, len) {
 
 /**
  *
- * @param {Object} filter Object returned by <BaseFilter>.parseQueryString
- * @param {Number} len max length of keys in filter.specs and filter.type
- * @return {Object} query object to pass to collection.find
+ * @param {object} filter Object returned by <BaseFilter>.parseQueryString
+ * @param {number} len max length of keys in filter.specs and filter.type
+ * @return {object} query object to pass to collection.find
  */
 function compileProductQuery(filter, len) {
   const query = { qty: { $gt: 0 }, z_index: 1 };
@@ -461,12 +466,48 @@ function compileProductQuery(filter, len) {
 }
 
 /**
+ * @param {Db} db
+ * @return {Promise.array}
+ */
+async function getProductCategories(db) {
+  if (cache.has("product_categories")) return cache.get("product_categories");
+
+  const cursor = db.collection("product_categories").aggregate([
+    {
+      $group: {
+        _id: "$category",
+        items: {
+          $push: {
+            code: "$code",
+            subcategory: "$subcategory",
+            desc: "$desc",
+          },
+        },
+      },
+    },
+    {
+      $sort: {
+        category: -1,
+      },
+    },
+  ]);
+
+  if (await cursor.hasNext()) {
+    const result = await cursor.toArray();
+
+    cache.set("product_categories", result);
+    return result;
+  }
+  return [];
+}
+
+/**
  * get all product listings
  * @param {Db} db An instance of mongodb Db
- * @param {Object} filters
- * @param {Number} limit max number of items to return
- * @param {String} key key to use for caching
- * @return {Promise.<Array>}
+ * @param {object} filters
+ * @param {number} limit max number of items to return
+ * @param {string} key key to use for caching
+ * @return {Promise.array}
  */
 async function getProductLists(db, filters, limit, key) {
   if (cache.has(key)) return cache.get(key);
@@ -520,8 +561,8 @@ async function getProductLists(db, filters, limit, key) {
 /**
  *
  * @param {Db} db
- * @param {String} sku product sku
- * @param {Object} [projection=None]
+ * @param {string} sku product sku
+ * @param {object} [projection=None]
  * @return {Promise.<null | WithId>}
  */
 async function getProductBySku(db, sku, projection = null) {
@@ -555,8 +596,7 @@ async function getProductBySku(db, sku, projection = null) {
 /**
  *  Aggregates the product data and description for product page
  *  @param {Db} db
- *  @param {String} sku
- *  @param {Object | null} [projection=null]
+ *  @param {string} sku
  */
 async function getProduct(db, sku) {
   const key = `itemPage_${sku}`;
@@ -612,8 +652,8 @@ async function getProduct(db, sku) {
 /**
  *
  * @param {Db} db
- * @param {String} sku product sku
- * @return {Object | Boolean}
+ * @param {string} sku product sku
+ * @return {Promise.<object | null>}
  */
 async function getProductVariants(db, sku) {
   const key = `itemVariants_${sku}`;
@@ -675,12 +715,12 @@ async function getProductVariants(db, sku) {
  * Executed when user enters the checkout process
  * Reserves products quantity for user during the checkout process.
  * @param {Db} db
- * @param {String} sessionId session id
- * @param {String} sku item sku
- * @param {Number} qty item quantity
- * @return {Promise.<Array>} [err, result]
+ * @param {string} sessionId session id
+ * @param {object} item product info object
+ * @return {Promise.array} [result, item]
  */
-async function reserveProductsForCheckout(db, sessionId, sku, qty) {
+async function reserveProductsForCheckout(db, sessionId, item) {
+  const { sku, qty } = item;
   const [, result] = await to(
     db.collection("product_variants").updateOne(
       { sku, qty: { $gte: qty } },
@@ -691,19 +731,19 @@ async function reserveProductsForCheckout(db, sessionId, sku, qty) {
     ),
     logger
   );
-  return result;
+  return [result, item];
 }
 
 /**
  * Executed when user leaves the checkout process
  * Removes item from reserved and adds the quantity back
  * @param {Db} db
- * @param {Object} item items object
- * @param {String} sessionId session id
- * @return {Promise.UpdateResult}
+ * @param {object} item items object
+ * @param {string} sessionId session id
+ * @return {Promise.array} [err, UpdateResult]
  */
-async function removeProductsFromCheckout(db, item, sessionId) {
-  const [, result] = await to(
+function removeProductsFromCheckout(db, item, sessionId) {
+  return to(
     db
       .collection("product_variants")
       .updateOne(
@@ -712,12 +752,11 @@ async function removeProductsFromCheckout(db, item, sessionId) {
       ),
     logger
   );
-  return result;
 }
 
 /**
- * @param {Array} arr
- * @return {Object}
+ * @param {array} arr
+ * @return {object}
  */
 function mapItems(arr) {
   const attr = {};
@@ -740,8 +779,8 @@ function mapItems(arr) {
 
 /**
  * @param {Db} db
- * @param {String} userId mongodb Object id string
- * @param {Array} sessionCart session cart items
+ * @param {string} userId mongodb Object id string
+ * @param {array} sessionCart session cart items
  */
 async function syncCartItems(db, userId, sessionCart) {
   // get cart items from collection
@@ -749,7 +788,8 @@ async function syncCartItems(db, userId, sessionCart) {
 
   if (dbCart === null) return false;
 
-  let itemsToInsert = [];
+  const itemsToInsert = [];
+  const promiseArray = [];
 
   if (dbCart.length) {
     // sync items
@@ -761,7 +801,7 @@ async function syncCartItems(db, userId, sessionCart) {
         if (dbItem.qty === item.qty) continue;
 
         // if items exists and qty is different, update the qty
-        await updateCartItem(db, userId, item.sku, item.qty);
+        promiseArray.push(updateCartItem(db, userId, item.sku, item.qty));
         continue;
       }
       // if item does not exist we add it together
@@ -779,10 +819,9 @@ async function syncCartItems(db, userId, sessionCart) {
     item.userId = new ObjectId(userId);
   });
 
-  const [err] = await to(
-    db.collection("cart").insertMany(itemsToInsert),
-    logger
-  );
+  promiseArray.push(db.collection("cart").insertMany(itemsToInsert));
+
+  const [err] = await to(Promise.all(promiseArray), logger);
 
   if (err) return false;
 
@@ -792,11 +831,11 @@ async function syncCartItems(db, userId, sessionCart) {
 /**
  * Get Cart items
  * @param {Db} db
- * @param {String} userId
- * @return {Promise.Array} [err, data]
+ * @param {string} userId
+ * @return {Promise.array} [err, data]
  */
-async function getCartItems(db, userId) {
-  const [, result] = await to(
+function getCartItems(db, userId) {
+  return to(
     db
       .collection("cart")
       .find(
@@ -817,34 +856,32 @@ async function getCartItems(db, userId) {
       .toArray(),
     logger
   );
-  return result;
 }
 
 /**
  * Get count of cart items
  * @param {Db} db
- * @param {String} userId
- * @return {Promise.number}
+ * @param {string} userId
+ * @return {Promise.array} [err, number]
  */
-async function getCartCount(db, userId) {
-  const [, result] = await to(
+function getCartCount(db, userId) {
+  return to(
     db.collection("cart").countDocuments({ userId: new ObjectId(userId) }),
     logger
   );
-  return result;
 }
 
 /**
  * Add an item to cart
  * @param {Db} db
- * @param {String} userId
- * @param {String} sku
- * @param {Number} qty
- * @param {Object} item
- * @return {Promise.InsertOneResult}
+ * @param {string} userId
+ * @param {string} sku
+ * @param {number} qty
+ * @param {object} item
+ * @return {Promise.array} [err, InsertOneResult]
  */
-async function addCartItem(db, userId, sku, qty, item) {
-  const [, result] = await to(
+function addCartItem(db, userId, sku, qty, item) {
+  return to(
     db.collection("cart").insertOne({
       userId: new ObjectId(userId),
       sku,
@@ -856,65 +893,61 @@ async function addCartItem(db, userId, sku, qty, item) {
       alt_img: item.alt_img,
     })
   );
-  return result;
 }
 
 /**
  * Remove an item from Cart
  * @param {Db} db
- * @param {String} userId
- * @param {String} sku
- * @return {Promise.DeleteResult}
+ * @param {string} userId
+ * @param {string} sku
+ * @return {Promise.array} [err, DeleteResult]
  */
-async function removeCartItem(db, userId, sku) {
-  const [, result] = await to(
+function removeCartItem(db, userId, sku) {
+  return to(
     db.collection("cart").deleteOne({ userId: new ObjectId(userId), sku })
   );
-  return result;
 }
 
 /**
  * Update Cart item qty
  * @param {Db} db
- * @param {String} userId
- * @param {String} sku
- * @param {Number} qty
- * @return {Promise.Array} [err, UpdateResult]
+ * @param {string} userId
+ * @param {string} sku
+ * @param {number} qty
+ * @return {Promise.array} [err, UpdateResult]
  */
-async function updateCartItem(db, userId, sku, qty) {
-  const [, result] = await to(
+function updateCartItem(db, userId, sku, qty) {
+  return to(
     db
       .collection("cart")
       .updateOne({ userId: new ObjectId(userId), sku }, { $set: { qty } }),
     logger
   );
-  return result;
 }
 
 /**
  * Clear all items in Cart
  * @param {Db} db
- * @param {String} userId
- * @return {Promise.DeleteResult}
+ * @param {string} userId
+ * @return {Promise.array} [err, DeleteResult]
  */
-async function clearCart(db, userId) {
-  const [, result] = await to(
+function clearCart(db, userId) {
+  return to(
     db.collection("cart").deleteMany({ userId: new ObjectId(userId) }),
     logger
   );
-  return result;
 }
 
 /**
  * Generates the guest order and returns the orderId
  * @param {Db} db
  * @param {ClientSession} dbClientSession
- * @param {Object} checkout
- * @param {String} [provider]
- * @return {Promise.Array} [result, orderId]
+ * @param {object} checkout
+ * @param {string} [provider]
+ * @return {Promise.array} [result, orderId]
  */
 async function createGuestOrder(db, dbClientSession, checkout, provider) {
-  let order;
+  const order = {};
 
   try {
     await dbClientSession.withTransaction(async () => {
@@ -940,96 +973,102 @@ async function createGuestOrder(db, dbClientSession, checkout, provider) {
         },
       };
 
-      // check if user exists by email
-      const userCursor = await userCollection.find(
-        { email: checkout.user.email },
-        { _id: 1, tel: 1 }
-      );
-
-      // if user exists
-      if (await userCursor.hasNext()) {
-        const user = await userCursor.next();
-
-        // update the telephone number if not exists or different from one provided
-        if (!user.tel || user.tel !== checkout.user.tel) {
-          await userCollection.updateOne(
-            { _id: user._id },
-            { $set: { tel: checkout.user.tel } }
+      await Promise.all([
+        (async () => {
+          // check if user exists by email
+          const user = await userCollection.findOne(
+            { email: checkout.user.email },
+            { projection: { _id: 1, tel: 1 } }
           );
-        }
 
-        // add userId to order document
-        document.userId = user._id;
-      } else {
-        // no user exists, add one
-        const result = await userCollection.insertOne({
-          fname: checkout.user.fname,
-          lname: checkout.user.lname,
-          email: checkout.user.email,
-          tel: checkout.user.tel,
-        });
+          // if user exists
+          if (user) {
+            /* update the telephone number if not exists or different from one
+            provided */
+            if (!user.tel || user.tel !== checkout.user.tel) {
+              await userCollection.updateOne(
+                { _id: user._id },
+                { $set: { tel: checkout.user.tel } }
+              );
+            }
 
-        // update the userId in order document
-        document.userId = result.insertedId;
-      }
+            // add userId to order document
+            document.userId = user._id;
+          } else {
+            // no user exists, add one
+            const result = await userCollection.insertOne({
+              fname: checkout.user.fname,
+              lname: checkout.user.lname,
+              email: checkout.user.email,
+              tel: checkout.user.tel,
+            });
 
-      // set isDefault for all user addresses to false
-      await addrCollection.updateMany(
-        { userId: document.userId },
-        { $set: { isDefault: false } }
-      );
+            // update the userId in order document
+            document.userId = result.insertedId;
+          }
+        })(),
 
-      let billToId;
-      let shipToId;
+        // set isDefault for all user addresses to false
+        addrCollection.updateMany(
+          { userId: document.userId },
+          { $set: { isDefault: false } }
+        ),
+      ]);
 
-      // check if billing address is stored by hash
-      const billToAddr = await addrCollection.find(
-        { userId: document.userId, hash: checkout.billTo.hash },
-        { projection: { _id: 1 } }
-      );
+      order.userId = document.userId;
 
-      if (await billToAddr.hasNext()) {
-        billToId = (await billToAddr.next())._id;
+      const [orderResult] = await Promise.all([
+        db.collection("orders").insertOne(document),
 
-        // set the current address as default billing address
-        await addrCollection.updateOne(
-          { _id: billToId },
-          { $set: { isDefault: true } }
-        );
-      } else {
-        checkout.billTo.userId = document.userId;
-        const result = await addrCollection.insertOne(checkout.billTo);
-        billToId = result.insertedId;
-      }
+        (async () => {
+          let billToId;
+          let shipToId;
 
-      // if shiping address same as billing address
-      shipToId = billToId;
+          // check if billing address is stored by hash
+          const billToAddr = await addrCollection.findOne(
+            { userId: document.userId, hash: checkout.billTo.hash },
+            { projection: { _id: 1 } }
+          );
 
-      // if shipping address is different from billing
-      if (checkout.shipTo) {
-        // check if shipping address is stored by hash
-        const shipToAddr = await addrCollection.find(
-          { userId: document.userId, hash: checkout.shipTo.hash },
-          { projection: { _id: 1 } }
-        );
+          if (billToAddr) {
+            billToId = billToAddr._id;
 
-        if (await shipToAddr.hasNext()) {
-          shipToId = (await shipToAddr.next())._id;
-        } else {
-          checkout.shipTo.userId = document.userId;
-          const result = await addrCollection.insertOne(checkout.shipTo);
-          shipToId = result.insertedId;
-        }
-      }
+            // set the current address as default billing address
+            await addrCollection.updateOne(
+              { _id: billToId },
+              { $set: { isDefault: true } }
+            );
+          } else {
+            checkout.billTo.userId = document.userId;
+            const result = await addrCollection.insertOne(checkout.billTo);
+            billToId = result.insertedId;
+          }
 
-      const result = await db.collection("orders").insertOne(document);
+          // if shiping address same as billing address
+          shipToId = billToId;
 
-      order = {
-        userId: document.userId,
-        orderId: result.insertedId,
-        billTo: billToId,
-        shipTo: shipToId,
-      };
+          // if shipping address is different from billing
+          if (checkout.shipTo) {
+            // check if shipping address is stored by hash
+            const shipToAddr = await addrCollection.findOne(
+              { userId: document.userId, hash: checkout.shipTo.hash },
+              { projection: { _id: 1 } }
+            );
+
+            if (shipToAddr) {
+              shipToId = shipToAddr._id;
+            } else {
+              checkout.shipTo.userId = document.userId;
+              const result = await addrCollection.insertOne(checkout.shipTo);
+              shipToId = result.insertedId;
+            }
+          }
+          order.billTo = billToId;
+          order.shipTo = shipToId;
+        })(),
+      ]);
+
+      order.orderId = orderResult.insertedId;
     }, transactionOptions);
   } catch (e) {
     logger.error(e);
@@ -1044,9 +1083,9 @@ async function createGuestOrder(db, dbClientSession, checkout, provider) {
  * Update the Guest order in db
  * @param {Db} db
  * @param {ClientSession} dbClientSession
- * @param {Object} checkout
- * @param {Object} order
- * @return {Promise.Array.<Boolean, Object>} [result, Order]
+ * @param {object} checkout
+ * @param {object} order
+ * @return {Promise.array.<boolean, object>} [result, Order]
  */
 async function updateGuestOrder(db, dbClientSession, checkout, order) {
   try {
@@ -1072,63 +1111,68 @@ async function updateGuestOrder(db, dbClientSession, checkout, order) {
         },
       };
 
-      await userCollection.updateOne(
-        { _id: new ObjectId(order.userId) },
-        {
-          $set: {
-            fname: checkout.user.fname,
-            lname: checkout.user.lname,
-            email: checkout.user.email,
-            tel: checkout.user.tel,
-          },
-        }
-      );
+      await Promise.all([
+        userCollection.updateOne(
+          { _id: new ObjectId(order.userId) },
+          {
+            $set: {
+              fname: checkout.user.fname,
+              lname: checkout.user.lname,
+              email: checkout.user.email,
+              tel: checkout.user.tel,
+            },
+          }
+        ),
 
-      await addrCollection.updateOne(
-        { _id: new ObjectId(order.billTo) },
-        {
-          $set: { ...checkout.billTo },
-        }
-      );
+        addrCollection.updateOne(
+          { _id: new ObjectId(order.billTo) },
+          {
+            $set: { ...checkout.billTo },
+          }
+        ),
 
-      if (checkout.shipTo) {
-        // Initial order shipped to same billing address
-        // Now customer has added a different address
-        if (order.billTo === order.shipTo) {
-          let shipToId;
-
-          // check if shipping address already exists
-          const shipToAddr = await addrCollection.find(
-            { hash: checkout.shipTo.hash },
-            { projection: { _id: 1 } }
-          );
-
-          if (await shipToAddr.hasNext()) {
-            shipToId = (await shipToAddr.next())._id;
-          } else {
-            // add the new address if not exists
-            const result = await addrCollection.insertOne(checkout.shipTo);
-            shipToId = result.insertedId;
+        (async () => {
+          if (!checkout.shipTo) {
+            // no shipping address, use bill address id
+            order.shipTo = order.billTo;
+            return;
           }
 
-          order.shipTo = shipToId;
-        } else {
-          // Update the existing shipping address
-          await addrCollection.updateOne(
-            { _id: new ObjectId(order.shipTo) },
-            {
-              $set: { ...checkout.shipTo },
-            }
-          );
-        }
-      } else {
-        // no shipping address, use bill address id
-        order.shipTo = order.billTo;
-      }
+          // Initial order shipped to same billing address
+          // Now customer has added a different address
+          if (order.billTo === order.shipTo) {
+            let shipToId;
 
-      await db
-        .collection("orders")
-        .updateOne({ _id: new ObjectId(order.orderId) }, document);
+            // check if shipping address already exists
+            const shipToAddr = await addrCollection.findOne(
+              { hash: checkout.shipTo.hash },
+              { projection: { _id: 1 } }
+            );
+
+            if (shipToAddr) {
+              shipToId = shipToAddr._id;
+            } else {
+              // add the new address if not exists
+              const result = await addrCollection.insertOne(checkout.shipTo);
+              shipToId = result.insertedId;
+            }
+
+            order.shipTo = shipToId;
+          } else {
+            // Update the existing shipping address
+            await addrCollection.updateOne(
+              { _id: new ObjectId(order.shipTo) },
+              {
+                $set: { ...checkout.shipTo },
+              }
+            );
+          }
+        })(),
+
+        db
+          .collection("orders")
+          .updateOne({ _id: new ObjectId(order.orderId) }, document),
+      ]);
     }, transactionOptions);
   } catch (e) {
     logger.error(e);
@@ -1144,10 +1188,10 @@ async function updateGuestOrder(db, dbClientSession, checkout, order) {
  * Generates the user order and returns the orderId
  * @param {Db} db
  * @param {ClientSession} dbClientSession
- * @param {Object} checkout
- * @param {Boolean} updateTel
- * @param {String} [provider]
- * @return {Promise.Array} [result, orderId]
+ * @param {object} checkout
+ * @param {boolean} updateTel
+ * @param {string} [provider]
+ * @return {Promise.array} [result, orderId]
  */
 async function createUserOrder(
   db,
@@ -1276,10 +1320,10 @@ async function createUserOrder(
  * Update the User order in db
  * @param {Db} db
  * @param {ClientSession} dbClientSession
- * @param {Object} checkout
- * @param {Boolean} updateTel,
- * @param {Object} order
- * @return {Promise.Array.<Boolean, Object>} [result, Order]
+ * @param {object} checkout
+ * @param {boolean} updateTel,
+ * @param {object} order
+ * @return {Promise.array.<boolean, object>} [result, Order]
  */
 async function updateUserOrder(
   db,
@@ -1380,11 +1424,11 @@ async function updateUserOrder(
 /**
  * @param {Db} db
  * @param {ClientSession} dbClientSession
- * @param {String} sessionId
- * @param {Array} items
- * @param {String} orderId
- * @param {String} payId
- * @param {String} payOrderId
+ * @param {string} sessionId
+ * @param {array} items
+ * @param {string} orderId
+ * @param {string} payId
+ * @param {string} payOrderId
  */
 async function processSuccessfulOrder(
   db,
@@ -1439,10 +1483,11 @@ async function processSuccessfulOrder(
 
 /**
  * @param {Db} db
- * @param {String} userId
- * @param {Object} [projection = null]
+ * @param {string} userId
+ * @param {object} [projection = null]
+ * @return {Promise.array} [err, WithId]
  */
-async function getUserOrders(db, userId, projection = null) {
+function getUserOrders(db, userId, projection = null) {
   if (!projection) {
     projection = {
       createdAt: 1,
@@ -1452,24 +1497,23 @@ async function getUserOrders(db, userId, projection = null) {
     };
   }
 
-  const [, result] = await to(
+  return to(
     db
       .collection("orders")
       .find({ userId: new ObjectId(userId), type: "USER" }, { projection })
       .toArray(),
     logger
   );
-
-  return result;
 }
 
 /**
  * @param {Db} db
- * @param {String} orderId
- * @param {String} userId
+ * @param {string} orderId
+ * @param {string} userId
+ * @return {Promise.array} [err, WithId]
  */
-async function getOrderById(db, orderId, userId) {
-  const [, result] = await to(
+function getOrderById(db, orderId, userId) {
+  return to(
     db.collection("orders").findOne(
       { _id: new ObjectId(orderId), userId: new ObjectId(userId) },
       {
@@ -1489,13 +1533,11 @@ async function getOrderById(db, orderId, userId) {
     ),
     logger
   );
-
-  return result;
 }
 
 /**
  * @param {Db} db
- * @return {Promise.Array}
+ * @return {Promise.WithId}
  */
 async function getOffers(db) {
   if (cache.has("offers")) return cache.get("offers");
@@ -1515,13 +1557,14 @@ async function getOffers(db) {
 
 /**
  * @param {Db} db
- * @param {String} code postal code
- * @return {Promise.Object}
+ * @param {string} code postal code
+ * @return {Promise.<WithId | object>}
  */
 async function getPostalData(db, code) {
   if (cache.has(code)) return cache.get(code);
 
   const collection = db.collection("pincodes");
+
   let [err, result] = await to(collection.findOne({ Pincode: code }), logger);
 
   if (!err && result) {
@@ -1531,90 +1574,86 @@ async function getPostalData(db, code) {
 
   result = await fetchPostalData(code);
 
-  if (!result instanceof Error) {
-    cache.set(code, result.message, 24 * 60 * 60);
-    collection.insertOne(result.message);
-  }
+  if (result instanceof Error) return result;
 
+  cache.set(code, result, 24 * 60 * 60);
+  collection.insertOne(result);
   return result;
 }
 
 /**
  * @param {Db} db
- * @param {String} email
+ * @param {string} email
  * @param {Object|null} [projection=null]
+ * @return {Promise.array} [err, WithId]
  */
-async function getUserByEmail(db, email, projection = null) {
+function getUserByEmail(db, email, projection = null) {
   if (!projection) projection = { hash: 1, role: 1, fname: 1, lname: 1 };
 
-  const [, result] = await to(
-    db.collection("users").findOne({ email }, { projection }),
-    logger
-  );
-  return result;
+  return to(db.collection("users").findOne({ email }, { projection }), logger);
 }
 
 /**
  * @param {Db} db
- * @param {String} userId
+ * @param {string} userId
  * @param {Object|null} [projection=null]
+ * @return {Promise.array} [err, WithId]
  */
-async function getUserById(db, userId, projection = null) {
+function getUserById(db, userId, projection = null) {
   if (!projection) projection = { fname: 1, lname: 1, email: 1, tel: 1 };
 
-  const [, result] = await to(
+  return to(
     db
       .collection("users")
       .findOne({ _id: new ObjectId(userId) }, { projection }),
     logger
   );
-  return result;
 }
 
 /**
  * @param {Db} db
- * @param {Object} doc
+ * @param {object} doc
+ * @return {Promise.array} [err, InsertOneResult]
  */
 async function addUser(db, doc) {
-  const [, result] = await to(db.collection("users").insertOne(doc), logger);
-  return result;
+  return to(db.collection("users").insertOne(doc), logger);
 }
 
 /**
  * @param {Db} db
- * @param {String} userId
- * @param {Object} doc query document to update
+ * @param {string} userId
+ * @param {object} doc query document to update
+ * @return {Promise.array} [err, UpdateResult]
  */
-async function updateUserById(db, userId, doc) {
-  const [, result] = await to(
+function updateUserById(db, userId, doc) {
+  return to(
     db
       .collection("users")
       .updateOne({ _id: new ObjectId(userId) }, { $set: doc }),
     logger
   );
-  return result;
 }
 
 /**
  * @param {Db} db
- * @param {String} userId
+ * @param {string} userId
+ * @return {Promise.array} [err, WithId]
  */
-async function getAddressesByUserId(db, userId) {
-  const [, result] = await to(
+function getAddressesByUserId(db, userId) {
+  return to(
     db
       .collection("addresses")
       .find({ userId: new ObjectId(userId) })
       .toArray(),
     logger
   );
-  return result;
 }
 
 /**
  * @param {Db} db
  * @param {ClientSession} dbClientSession
- * @param {String} addressId
- * @param {String} userId
+ * @param {string} addressId
+ * @param {string} userId
  */
 async function setDefaultBillingAddress(
   db,
@@ -1625,21 +1664,23 @@ async function setDefaultBillingAddress(
   try {
     await dbClientSession.withTransaction(async () => {
       const addressCollection = db.collection("addresses");
-      const result1 = await addressCollection.updateOne(
-        { userId: new ObjectId(userId), isDefault: true },
-        { $set: { isDefault: false } }
-      );
 
-      if (result1.modifiedCount === 0) {
+      const updateResult = await Promise.all([
+        addressCollection.updateOne(
+          { userId: new ObjectId(userId), isDefault: true },
+          { $set: { isDefault: false } }
+        ),
+        addressCollection.updateOne(
+          { _id: new ObjectId(addressId), userId: new ObjectId(userId) },
+          { $set: { isDefault: true } }
+        ),
+      ]);
+
+      if (updateResult[0].modifiedCount === 0) {
         throw Error("Update isDefault to false failed");
       }
 
-      const result2 = await addressCollection.updateOne(
-        { _id: new ObjectId(addressId), userId: new ObjectId(userId) },
-        { $set: { isDefault: true } }
-      );
-
-      if (result2.modifiedCount === 0) {
+      if (updateResult[1].modifiedCount === 0) {
         throw Error("Update isDefault to true failed");
       }
     }, transactionOptions);
@@ -1655,12 +1696,13 @@ async function setDefaultBillingAddress(
 /**
  *
  * @param {Db} db
- * @param {String} userId
- * @param {String} addressId
- * @param {Object} addressObj
+ * @param {string} userId
+ * @param {string} addressId
+ * @param {object} addressObj
+ * @return {Promise.array} [err, UpdateResult]
  */
-async function updateAddress(db, userId, addressId, addressObj) {
-  const [, result] = await to(
+function updateAddress(db, userId, addressId, addressObj) {
+  return to(
     db
       .collection("addresses")
       .updateOne(
@@ -1669,14 +1711,13 @@ async function updateAddress(db, userId, addressId, addressObj) {
       ),
     logger
   );
-  return result;
 }
 
 /**
  * @param {Db} db
- * @param {String} collectionName
- * @param {String} fieldName
- * @param {Object} [query={}]
+ * @param {string} collectionName
+ * @param {string} fieldName
+ * @param {object} [query={}]
  */
 async function getDistinct(db, collectionName, fieldName, query = {}) {
   const key = `${collectionName}_${fieldName}_${query.sku?.$regex}`;
@@ -1702,6 +1743,7 @@ module.exports = {
   editBlogComment,
   getBlogComments,
   getBlogCommentsCount,
+  getProductCategories,
   getProductLists,
   getProductBySku,
   getProduct,

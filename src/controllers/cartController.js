@@ -14,7 +14,7 @@ const get = async (req, res) => {
   const db = req.app.get("db");
   const userId = req.session.userId;
 
-  const items = await getCartItems(db, userId);
+  const [, items] = await getCartItems(db, userId);
 
   if (!items) return res.sendStatus(500);
 
@@ -80,7 +80,7 @@ const add = async (req, res) => {
   } else {
     const userId = req.session.userId;
 
-    const status = await addCartItem(db, userId, sku, qty, item);
+    const [, status] = await addCartItem(db, userId, sku, qty, item);
 
     if (!status.acknowledged || !status.insertedId) return res.sendStatus(500);
   }
@@ -115,7 +115,7 @@ const remove = async (req, res) => {
     const userId = req.session.userId;
     const db = req.app.get("db");
 
-    const status = await removeCartItem(db, userId, sku);
+    const [, status] = await removeCartItem(db, userId, sku);
 
     if (!status.acknowledged || status.deletedCount !== 1) {
       return res.sendStatus(500);
@@ -154,7 +154,7 @@ const update = async (req, res) => {
   } else {
     const userId = req.session.userId;
 
-    const status = await updateCartItem(db, userId, sku, qty);
+    const [, status] = await updateCartItem(db, userId, sku, qty);
 
     if (!status || status.modifiedCount !== 1) {
       return res.sendStatus(500);
@@ -172,7 +172,7 @@ const clear = async (req, res) => {
     const userId = req.session.userId;
     const db = req.app.get("db");
 
-    const status = await clearCart(db, userId);
+    const [, status] = await clearCart(db, userId);
 
     if (!status.acknowledged) return res.sendStatus(500);
   }

@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= title %></title>
 
+    <% const imgBaseUrl = new URL(imgUrl).origin %>
+    <link rel="dns-prefetch" href="<%= imgBaseUrl %>" />
+    <link rel="preconnect" href="<%= imgBaseUrl %>" />
+    <link rel="prefetch" href="/images/sprite-53801210.svg" />
+
     <link rel="stylesheet" href="/css/bulma.min.css" />
 
     <% if (env === "production") { %>
@@ -48,3 +53,4 @@
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
     <meta name="theme-color" content="#ffffff" />
   </head>
+</html>

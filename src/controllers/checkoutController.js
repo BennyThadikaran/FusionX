@@ -79,27 +79,25 @@ const getGuestCheckout = async (req, res) => {
 
   // Reserve items from stock if not already done
   if (!req.session.cartReserved) {
+    const promiseArray = [];
+
     for (const item of items) {
       // update product qty
-      const result = await reserveProductsForCheckout(
-        db,
-        req.sessionID,
-        item.sku,
-        item.qty
-      );
+      promiseArray.push(reserveProductsForCheckout(db, req.sessionID, item));
+    }
 
-      if (!result) return res.sendStatus(500);
+    const result = await Promise.all(promiseArray);
 
-      if (result.modifiedCount === 1) {
+    result.forEach(async ([reserveResult, item]) => {
+      if (!reserveResult) return res.sendStatus(500);
+
+      if (reserveResult.modifiedCount === 1) {
         // every thing is fine.
         req.session.checkout.items.push(item);
       } else {
         // not enough stock to reserve quantity
-
         // get the updated qty
-        const updatedItem = await getProductBySku(db, item.sku, {
-          qty: 1,
-        });
+        const updatedItem = await getProductBySku(db, item.sku, { qty: 1 });
 
         if (updatedItem.qty === 0) {
           // out of stock
@@ -109,11 +107,10 @@ const getGuestCheckout = async (req, res) => {
           // we add the available stock and reserve them for the user
           item.qty = updatedItem.qty;
 
-          const result = await reserveProductsForCheckout(
+          const [result] = await reserveProductsForCheckout(
             db,
             req.sessionID,
-            item.sku,
-            item.qty
+            item
           );
 
           if (!result) return res.sendStatus(500);
@@ -129,8 +126,8 @@ const getGuestCheckout = async (req, res) => {
 
         // Add the updated item to display any qty changes to user at checkout
         errorItems.push(item);
-      } // end if else - result.modifiedCount
-    } // end for loop - items
+      }
+    });
 
     req.session.cartReserved = true;
   } // end if - cart not reserved
@@ -307,7 +304,7 @@ const postGuestCheckout = async (req, res) => {
     const freeShipOffer = offers.find((offer) => offer.code === "SHIPFREE");
     const isIntraState = billTo.state.toUpperCase() === req.app.locals.state;
 
-    const [, checkout] = prepItemsForCheckout(
+    const checkout = prepItemsForCheckout(
       { ...req.session.checkout, user: { fname, lname, email, tel }, billTo },
       freeShipOffer,
       isIntraState
@@ -446,13 +443,13 @@ const getUserCheckout = async (req, res) => {
   const db = req.app.get("db");
   const userId = req.session.userId;
 
-  const items = await getCartItems(db, userId);
+  const [, items] = await getCartItems(db, userId);
 
   if (!items) return res.sendStatus(500);
 
   if (!items.length) return res.redirect("/");
 
-  req.session.user = await getUserById(db, userId);
+  [, req.session.user] = await getUserById(db, userId);
 
   // An array to store items which are out of stock or insufficient quantity
   const errorItems = [];
@@ -462,18 +459,19 @@ const getUserCheckout = async (req, res) => {
   if (!req.session.checkout.items) req.session.checkout.items = [];
 
   if (!req.session.cartReserved) {
+    const promiseArray = [];
     for (const item of items) {
-      // update product qty
-      const result = await reserveProductsForCheckout(
-        db,
-        req.sessionID,
-        item.sku,
-        item.qty
-      );
+      promiseArray.push(reserveProductsForCheckout(db, req.sessionID, item));
 
-      if (!result) return res.sendStatus(500);
+      // end if else - result.modifiedCount
+    } // end for loop - items
 
-      if (result.modifiedCount === 1) {
+    const result = await Promise.all(promiseArray);
+
+    result.forEach(async ([reserveResult, item]) => {
+      if (!reserveResult) return res.sendStatus(500);
+
+      if (reserveResult.modifiedCount === 1) {
         // every thing is fine.
         req.session.checkout.items.push(item);
       } else {
@@ -494,11 +492,10 @@ const getUserCheckout = async (req, res) => {
           // we add the available stock and reserve them for the user
           item.qty = updatedItem.qty;
 
-          const result = await reserveProductsForCheckout(
+          const [result] = await reserveProductsForCheckout(
             db,
             req.sessionID,
-            item.sku,
-            item.qty
+            item
           );
 
           if (!result) return res.sendStatus(500);
@@ -514,8 +511,8 @@ const getUserCheckout = async (req, res) => {
 
         // Add the updated item to display any qty changes to user at checkout
         errorItems.push(item);
-      } // end if else - result.modifiedCount
-    } // end for loop - items
+      }
+    });
 
     req.session.cartReserved = true;
   } // end if - cart not reserved
@@ -527,7 +524,7 @@ const getUserCheckout = async (req, res) => {
   ) {
     // if an order has been settled in the session,
     // update the address list of the user
-    const result = await getAddressesByUserId(db, req.session.userId);
+    const [, result] = await getAddressesByUserId(db, req.session.userId);
 
     if (!result) return res.sendStatus(500);
 
@@ -673,7 +670,7 @@ const postUserCheckout = async (req, res) => {
     const billToPostalData = await getPostalData(db, billTo.postalCode);
 
     if (
-      "error" in billToPostalData ||
+      billToPostalData instanceof Error ||
       billToPostalData.District !== billTo.region ||
       billToPostalData.State !== billTo.state
     ) {
@@ -685,7 +682,7 @@ const postUserCheckout = async (req, res) => {
       const shipToPostalData = await getPostalData(db, shipTo.postalCode);
 
       if (
-        "error" in shipToPostalData ||
+        shipToPostalData instanceof Error ||
         shipToPostalData.District !== shipTo.region ||
         shipToPostalData.State !== shipTo.state
       ) {

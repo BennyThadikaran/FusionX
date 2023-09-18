@@ -131,6 +131,7 @@ dist
 
 src/views/blog/posts/*
 tmp
+src/public/js/variables.js
 
 # python
 bin/

@@ -6,22 +6,6 @@ module.exports = function (req, res, next) {
   let name;
   res.locals.bc = [];
 
-  const doc = {
-    camxts: "Men's T-Shirts",
-    camxho: "Men's Hoodies",
-    camxsh: "Men's Shorts",
-    camxtp: "Men's Track Pants",
-    camxas: "Men's Athletic Socks",
-    cawxts: "Women's T-Shirts",
-    cawxaw: "Women's Athletic Wear",
-    cawxsh: "Women's Shorts",
-    cawxtp: "Women's Track Pants",
-    cawxas: "Women's Athletic Socks",
-    efacfr: "Foam rollers",
-    efacrb: "Resistance Bands",
-    efacrt: "Resistance Tubes",
-  };
-
   for (const [i, crumb] of crumbs.entries()) {
     bcUrl += `${crumb}/`;
     name =
@@ -38,7 +22,8 @@ module.exports = function (req, res, next) {
 
   if (req.params.sku) {
     const key = req.params.sku.substring(0, 6);
-    const name = doc[key];
+
+    const name = req.app.locals.productMap[key];
     res.locals.bc.splice(-2, 10, {
       name,
       url: `/shop?category=${key}`,

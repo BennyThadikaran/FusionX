@@ -34,6 +34,7 @@ const multistep = (function () {
       )
         return;
 
+      window.scrollTo(0, 0);
       currStep++;
       currTab++;
 

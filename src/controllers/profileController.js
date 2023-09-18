@@ -1,4 +1,3 @@
-const { type } = require("os");
 const { join } = require("path");
 const validate = require(join(__dirname, "..", "services", "validate"));
 const { getAddressHash } = require(join(__dirname, "..", "services", "utils"));
@@ -21,7 +20,10 @@ const {
 const orderList = async (req, res) => {
   if (!req.session.logged) return res.redirect("/profile/login");
 
-  const orderList = await getUserOrders(req.app.get("db"), req.session.userId);
+  const [, orderList] = await getUserOrders(
+    req.app.get("db"),
+    req.session.userId
+  );
 
   return res.render("userOrderList", {
     orderList,
@@ -35,7 +37,7 @@ const getOrder = async (req, res) => {
   const orderId = req.params.id;
   const userId = req.session.userId;
 
-  const order = await getOrderById(req.app.get("db"), orderId, userId);
+  const [, order] = await getOrderById(req.app.get("db"), orderId, userId);
 
   return res.render("userOrder", {
     order,
@@ -46,7 +48,7 @@ const getOrder = async (req, res) => {
 const billing = async (req, res) => {
   if (!req.session.logged) return res.redirect("/profile/login");
 
-  const addresses = await getAddressesByUserId(
+  const [, addresses] = await getAddressesByUserId(
     req.app.get("db"),
     req.session.userId
   );
@@ -151,7 +153,7 @@ const editAddress = async (req, res) => {
 
   const hash = getAddressHash({ name, address, postalCode });
 
-  const result = await updateAddress(db, userId, addressId, {
+  const [, result] = await updateAddress(db, userId, addressId, {
     name,
     address,
     postalCode,
@@ -224,7 +226,7 @@ const createUser = async (req, res) => {
   }
 
   const db = req.app.get("db");
-  const user = await getUserByEmail(db, email);
+  const [, user] = await getUserByEmail(db, email);
 
   if (user) {
     // user already has role
@@ -234,7 +236,7 @@ const createUser = async (req, res) => {
         data: `User with role ${role.toUpperCase()} already exists`,
       });
 
-    const result = await updateUserById(db, user._id, { role });
+    const [, result] = await updateUserById(db, user._id, { role });
 
     if (result) return res.sendStatus(500);
 
@@ -246,7 +248,7 @@ const createUser = async (req, res) => {
 
     return res.json({ status: "error", data: "User update failed" });
   } else {
-    const result = await addUser(db, {
+    const [, result] = await addUser(db, {
       fname,
       lname,
       email,
@@ -328,7 +330,7 @@ const createBlogPost = async (req, res) => {
     return res.json({ status: "error", data: req.errors });
   }
 
-  const user = await getUserById(db, userId, { fname: 1, lname: 1 });
+  const [, user] = await getUserById(db, userId, { fname: 1, lname: 1 });
 
   const post = await getBlogPost(db, fileName, { _id: 1 });
 
