@@ -1,3 +1,10 @@
+const typeOptions = {
+  delay: 0,
+  log: false,
+  waitForAnimations: 0,
+  animationDistanceThreshold: 0,
+};
+
 describe("signup", () => {
   beforeEach(() => {
     cy.visit("/profile/signup");
@@ -38,8 +45,8 @@ describe("signup", () => {
     const fname = cy.get("[name='fname']");
     const lname = cy.get("[name='lname']");
 
-    fname.type("John_");
-    lname.type("Doe%");
+    fname.type("John_", typeOptions);
+    lname.type("Doe%", typeOptions);
 
     form.submit();
 
@@ -60,7 +67,7 @@ describe("signup", () => {
     const form = cy.get("form");
 
     const email = cy.get("[name='email']");
-    email.type("johnexample.com");
+    email.type("johnexample.com", typeOptions);
 
     form.submit();
 
@@ -74,11 +81,11 @@ describe("signup", () => {
   it("Registration is successfull", () => {
     const form = cy.get("form");
 
-    cy.get("[name='fname']").type("John");
-    cy.get("[name='lname']").type("Doe");
-    cy.get("[name='email']").type("tester@example.com");
-    cy.get("[name='pwd']").type("johnTester@");
-    cy.get("[name='pwdRepeat']").type("johnTester@");
+    cy.get("[name='fname']").type("John", typeOptions);
+    cy.get("[name='lname']").type("Doe", typeOptions);
+    cy.get("[name='email']").type("tester@example.com", typeOptions);
+    cy.get("[name='pwd']").type("johnTester@", typeOptions);
+    cy.get("[name='pwdRepeat']").type("johnTester@", typeOptions);
 
     cy.intercept("http://localhost:3000/profile/signup").as("register");
     form.submit();
@@ -93,11 +100,11 @@ describe("signup", () => {
   it("Registering an existing user displays an error.", () => {
     const form = cy.get("form");
 
-    cy.get("[name='fname']").type("John");
-    cy.get("[name='lname']").type("Test");
-    cy.get("[name='email']").type("john@example.com");
-    cy.get("[name='pwd']").type("johntester@");
-    cy.get("[name='pwdRepeat']").type("johntester@");
+    cy.get("[name='fname']").type("John", typeOptions);
+    cy.get("[name='lname']").type("Test", typeOptions);
+    cy.get("[name='email']").type("john@example.com", typeOptions);
+    cy.get("[name='pwd']").type("johntester@", typeOptions);
+    cy.get("[name='pwdRepeat']").type("johntester@", typeOptions);
 
     cy.intercept("http://localhost:3000/profile/signup").as("register");
     form.submit();
