@@ -18,8 +18,11 @@ const config = {
   static: {
     enableBrotli: true,
     index: false,
-    extensions: ["js", "css", "png", "svg"],
+    extensions: ["js", "css", "png", "svg", "xml", "json"],
   },
+
+  // used to send cache control headers
+  staticFileExt: ["css", "js", "svg", "xml", "json", "png", "ico"],
 
   // cors
   corsOption: {

@@ -487,7 +487,7 @@ async function getProductCategories(db) {
     },
     {
       $sort: {
-        category: -1,
+        _id: -1,
       },
     },
   ]);
