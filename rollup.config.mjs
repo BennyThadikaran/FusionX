@@ -1,4 +1,3 @@
-import { resolve } from "path";
 import terser from "@rollup/plugin-terser";
 import postcss from "rollup-plugin-postcss";
 import autoprefixer from "autoprefixer";
@@ -16,7 +15,6 @@ let additionalFiles = readdirSync("src/public/images")
   .map((file) => `dist/${file}`);
 
 additionalFiles = additionalFiles.concat([
-  "dist/bundle.min.css",
   "dist/bulma.min.css",
   "dist/swipe.min.js",
   "dist/purify.min.js",
@@ -29,11 +27,12 @@ const brotliPromise = promisify(brotliCompress);
 const gzipFilter = /.(js|css|png|svg|ico|xml|json)$/;
 
 export default {
-  input: ["./src/public/js/bundle.min.js", "./src/public/js/admin.min.js"],
+  input: ["./src/public/js/bundle.js", "./src/public/js/admin.js"],
   output: {
     sourcemap: true,
     dir: "dist",
     format: "es",
+    entryFileNames: "[hash].[name].min.js",
     generatedCode: {
       constBindings: true,
     },
@@ -53,7 +52,9 @@ export default {
   },
   plugins: [
     postcss({
-      extract: resolve("./dist/bundle.min.css"),
+      extract: true,
+      minimize: true,
+      sourceMap: false,
       plugins: [autoprefixer(), cssnano()],
     }),
     copy({

@@ -27,6 +27,7 @@ app.locals.shopListLimit = config.shopListLimit;
 app.locals.commentListLimit = config.commentListLimit;
 app.locals.pwdInputs = config.pwdInputs;
 app.locals.imgUrl = config.imgUrl;
+app.locals.staticFileExt = config.staticFileExt;
 
 app.set("views", join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -82,7 +83,11 @@ config.session.store = MongoStore.create({
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1); // trust first proxy
   config.session.cookie.secure = true;
-  app.use("/", serveCompressed("public", "public", config.static));
+  app.use(
+    "/",
+    require(join(__dirname, "middleware", "cacheHeaders.js")),
+    serveCompressed("public", "public", config.static)
+  );
 } else {
   app.use(express.static(join(__dirname, "public"), { index: false }));
 }

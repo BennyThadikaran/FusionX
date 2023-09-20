@@ -5,9 +5,9 @@
 # set -xv
 
 # create the dist folder and other folders within
-mkdir dist dist/public dist/public/js dist/public/css dist/public/images;
+mkdir -p dist dist/public dist/public/js dist/public/css dist/public/images;
 
-MAIN_JS=src/public/js/bundle.min.js; # temp file as entry point for rollup
+MAIN_JS=src/public/js/bundle.js; # temp file as entry point for rollup
 SRC_SERVER=src/server.js;
 
 # Add import css statements to main.js needed for rollup to generate bundle
@@ -15,6 +15,11 @@ echo -n 'import "../css/style.css"
 import "../css/sprite.css"
 ' > $MAIN_JS;
 
+# execute nodejs code
+# Store variables from config to variables.js
+# Test env variables differ from dev/prod variables. In test/dev environment,
+# variables are written to variables.js everytime servers is restarted.
+# Below code ensures test variables don't leak into production
 $(exec node <<EOF
 const { writeFile } = require("fs");
 const config = require("./src/appConfig.js");
@@ -32,14 +37,9 @@ export const commentListLimit = \${config.commentListLimit};\`,
 EOF
 );
 
-# Append app.js contents to main.js
+# Append app.js contents to bundle.js
 # app.js is the main module for our frontend js
 cat src/public/js/app.js >> $MAIN_JS;
-
-# create a copy of admin.js and name it admin.min.js
-# this is only to provide consistent naming to the rollup output files
-# it will be deleted later
-cp src/public/js/admin.js src/public/js/admin.min.js
 
 # run rollup using config file
 npx rollup -c;
@@ -52,51 +52,69 @@ npx rollup --format cjs -o src/services/validate.js \
     src/public/js/validate.js/src/validate.js;
 
 # rollup work completed, remove the temp file
-rm $MAIN_JS src/public/js/admin.min.js;
+rm $MAIN_JS;
 
-# rollup outputs all files in the dist folder.
-# Perhaps the behavior can be changed in config?
-# move all files to their respective folders
+# rollup will output all files in the dist folder. Move all files to their respective folders
 
-# gzip, brotli js and js.map files to dist/public/js
+# Compressed JS and related souremaps to dist/public/js
 mv -t dist/public/js/ dist/*.js.br dist/*.js.gz dist/*.js.map
 
-# gzip, brotli css files to dist/public/css
+# Compressed css files to dist/public/css
 mv -t dist/public/css dist/*.css.gz dist/*.css.br
 
-# gzip, brotli png, svg, ico files to dist/public/images
+# Compressed png, svg, ico files to dist/public/images
 mv -t dist/public/images \
     dist/*.png.br dist/*.png.gz dist/*.ico.br dist/*.ico.gz dist/*.svg.br \
     dist/*.svg.gz
 
-# move remaining files brotli and gzip files to dist/public
-# these are browserconfig.xml, manifest.json and their gzip and brotli files
+# move remaining compressed files to dist/public - browserconfig.xml, manifest.json
 mv -t dist/public dist/*.br dist/*.gz
 
-# all other static files are removed
+# remove all other non compressed static files
 rm dist/*.js dist/*.css dist/*.png dist/*.ico dist/*.svg dist/*.json dist/*.xml
 
-# copy other files and folders from src to dist folder
+# copy remaining files and folders from src to dist folder
 cp -t dist -a src/controllers/ src/middleware/ \
     src/model/ src/routes/ src/views src/services/;
 
 cp -t dist src/appConfig.js package.json;
+
+# Rollup bundles css with filename [hash].admin.min.css instead of bundled.min.css
+# Need to check with Rollup team, meanwhile lets rename the files
+# Get the hashed filename for gzip and brotli
+GZ_FILE=$(ls dist/public/css/*.admin.min.css.gz)
+BR_FILE=${GZ_FILE/gz/br}
+
+# If file exists, rename them correctly as
+# [hash].bundle.css.gz and [hash].bundle.css.br
+test -f $GZ_FILE && mv $GZ_FILE ${GZ_FILE/admin/bundle}
+test -f $BR_FILE && mv $BR_FILE ${BR_FILE/admin/bundle}
+
+# get the base file name and strip out .gz
+JS=$(basename dist/public/js/*.bundle.min.js.gz | sed 's/.gz//');
+CSS=$(basename dist/public/css/*.bundle.min.css.gz | sed 's/.gz//')
+
+# replace the script src to reflect the hash js filename
+sed -i "s/bundle.min.js/${JS}/g" dist/views/partials/footer.ejs
+
+# replace the stylesheet href to reflect the hashed css filename
+sed -i "s/bundle.min.css/${CSS}/g" dist/views/partials/head.ejs
 
 # Clean up any code marked for development from server.js
 # sed: -n silent mode, = to print current line number
 START=$(sed -n '/START DEV CODE/=' $SRC_SERVER);
 END=$(sed -n '/END DEV CODE/=' $SRC_SERVER);
 
-# sed: 10,12d - delete start and end lines and output to dist/server.js
+# sed: 10,12d - delete lines numbered from $START to $END and output to dist/server.js
 sed "${START},${END}d" $SRC_SERVER > dist/server.js;
 
 # check if writeFile from fs module is used anywhere else in server.js
 # grep -c : get count of writeFile occurences in server.js
-LINE_NUM=$(grep -c "writeFile" dist/server.js);
+LINE_COUNT=$(grep -c "writeFile" dist/server.js);
 
 # get the line number on which writeFile exists.
 # This is likely the require statement
 LINE=$(sed -n '/writeFile/=' dist/server.js);
 
 # if LINE_NUM === 1 edit the file in place (sed -i) and delete the line
-test $LINE_NUM -eq "1" && sed -i "${LINE}d" dist/server.js;
+test $LINE_COUNT -eq "1" && sed -i "${LINE}d" dist/server.js;
