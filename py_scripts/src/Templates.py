@@ -23,6 +23,9 @@ class BaseTemplate:
 
     added_validations: callable - Optional method
         Any additional validations to be run on the file
+
+    To generate a template file:
+    Instantiate the Class and call the generate_file method
     '''
 
     parent_columns = ('listing_type', 'brand', 'title',
@@ -39,16 +42,16 @@ class BaseTemplate:
 
     alpha_num = ascii_lowercase + digits
 
-    type_columns = None
+    type_columns = tuple()
     added_validations = None
     added_specs = None
     added_other_specs = None
 
-    def __init__(self, file: Path, db: Model):
+    def __init__(self, file: Path, model: Model):
         self.file_exists = file.is_file()
 
         self.file = file
-        self.db = db
+        self.model = model
 
     def __enter__(self):
         if not self.file_exists:
@@ -56,15 +59,21 @@ class BaseTemplate:
 
         self.csv = self.file.open()
         self.reader = DictReader(self.csv, dialect='excel-tab')
-        self.length = len(self.reader.fieldnames)
+
+        if self.reader.fieldnames:
+            self.length = len(self.reader.fieldnames)
+
         self.title = ''
         self.brand = ''
+
+        self.db = self.model.connect()
+        self.category_codes = self.model.getProductCategoryCodes()
         return self
 
     def __exit__(self, exc_type, exc_value, exc_trace):
         if self.file_exists:
             self.csv.close()
-            self.db.con.close()
+            self.model.con.close()
 
         if exc_type:
             exit(f'{exc_type}: {self.file.name}: {exc_value}: {exc_trace}')
@@ -87,22 +96,29 @@ class BaseTemplate:
         if not self.file_exists:
             raise FileNotFoundError(f'{self.file} does not exist')
 
-        columns = self.reader.fieldnames
-
         if self.type_columns is None:
             raise NotImplementedError(
                 f'{self.__class__.__name__} must have a type_columns attribute')
 
-        for column in chain(self.parent_columns, self.child_columns,
-                            self.type_columns, self.other_spec_columns):
+        columns = self.reader.fieldnames
+
+        if not columns:
+            raise ValueError("Not a valid template file.")
+
+        for column in chain(self.parent_columns,
+                            self.child_columns,
+                            self.type_columns,
+                            self.other_spec_columns):
             if not column in columns:
                 raise KeyError(f'{column} column missing from {self.file}')
 
         # Must have atleast 1 parent listing with listing_type=MAIN
         has_main = False
 
+        # Must have atleast 1 child listing with listing_type=SUB
         has_sub = False
 
+        # suppress pyright unbound warning
         has_gst_parent = False
 
         # keep track of row count for error tracking
@@ -125,6 +141,11 @@ class BaseTemplate:
                     if column == 'gst' and row[column] == '':
                         has_gst_parent = False
 
+                    if (column == 'category_code' and
+                            not row['category_code'] in self.category_codes):
+                        raise ValueError(
+                            f"Row {count}: {row['category_code']} not found in product_categories collection.")
+
                     if row[column]:
                         continue
 
@@ -142,6 +163,7 @@ class BaseTemplate:
                                     self.other_spec_columns,
                                     self.type_columns):
 
+                    # GST must be specified in either parent or all child rows
                     if column == 'gst' and not has_gst_parent and row[column] == '':
                         raise ValueError(
                             f'Row {count}: GST not set on parent or child')
@@ -176,9 +198,10 @@ class BaseTemplate:
         options = []
         title = ''
 
-        for option in self.type_columns:
-            options.append({'k': option, 'v': row[option]})
-            title += row[option] + ', '
+        if isinstance(self.type_columns, tuple):
+            for option in self.type_columns:
+                options.append({'k': option, 'v': row[option]})
+                title += row[option] + ', '
 
         # remove trailing ', '
         self.option_title = title.strip(', ')
@@ -218,6 +241,7 @@ class BaseTemplate:
 
     def generate_file(self):
         """Generates a template file with the filename supplied in the contructor"""
+
         if not self.type_columns:
             raise NotImplementedError(
                 f'{self.__class__.__name__} must have a type_columns attribute')
@@ -241,19 +265,18 @@ class BaseTemplate:
         '''Run validations on the file and if error free,
         add products to the database
         '''
-        self._validate_file()
 
-        # all well connect to Database
-        self.db.connect()
+        self._validate_file()
 
         child_count = 1
         row_count = 2
 
-        items = self.db.db.products.find(
+        items = self.db.products.find(
             projection={'_id': 0, 'product_code': 1}
         )
 
         self.codes = [item['product_code'] for item in items]
+        product = None
 
         for row in self.reader:
             if row['listing_type'] == 'MAIN':
@@ -261,18 +284,21 @@ class BaseTemplate:
 
                 product = self._compile_product(row)
 
-                res = self.db.db.products.insert_one(product)
+                res = self.db.products.insert_one(product)
 
                 if not res.acknowledged:
                     print(f'Product insert failed: Row {row_count}')
 
             if row['listing_type'] == 'SUB':
+                if product is None:
+                    raise Exception()
+
                 code = product['product_code']
 
                 item = self._compile_variant(row, code, child_count)
 
                 # Add the variant description to variant_info collection
-                info_result = self.db.db.variant_info.insert_one(
+                info_result = self.db.variant_info.insert_one(
                     {'info': row['description']})
 
                 if info_result.acknowledged:
@@ -281,7 +307,7 @@ class BaseTemplate:
                 else:
                     print('Info insert failed', item['title'])
 
-                variant_result = self.db.db.product_variants.insert_one(item)
+                variant_result = self.db.product_variants.insert_one(item)
 
                 if not variant_result.acknowledged:
                     print(f'Variant insert failed: Row {row_count}')

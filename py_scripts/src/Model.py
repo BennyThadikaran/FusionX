@@ -21,3 +21,6 @@ class Model:
             if ('MONGO_CONN_STRING') in line:
                 return line[line.find('=') + 1:]
         raise LookupError('MONGO_CONN_STRING not set in .env')
+
+    def getProductCategoryCodes(self):
+        return self.db.product_categories.distinct("code")
