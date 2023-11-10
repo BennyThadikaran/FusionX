@@ -13,10 +13,12 @@
   </div>
 </section>
 
+<% for (const [label, lst] of Object.entries(product_lists)) { %> <% if
+(lst.length) { %>
 <section class="section pt-0 pb-5">
-  <h1 class="title mb-0 ml-4">T-shirts for Men</h1>
+  <h1 class="title mb-0 ml-4"><%= label %></h1>
   <div class="is-flex is-flex-wrap-wrap" id="shop-content-1">
-    <% for (const [i, product] of camxts.entries()) { %>
+    <% for (const [i, product] of lst.entries()) { %>
     <a href="/shop/<%= product.href %>" class="card card-sm">
       <div class="card-image">
         <figure class="image is-4by3">
@@ -44,71 +46,10 @@
     <% } %>
   </div>
 </section>
+<% } } %>
 
-<section class="section pt-0 pb-5">
-  <h1 class="title mb-0 ml-4">T-shirts for Women</h1>
-  <div class="is-flex is-flex-wrap-wrap" id="shop-content-2">
-    <% for (const [i, product] of cawxts.entries()) { %>
-    <a href="/shop/<%= product.href %>" class="card card-sm">
-      <div class="card-image">
-        <figure class="image is-4by3">
-          <img
-            src="<%= imgUrl %>/276x207/<%= product.image[0] %>"
-            alt="<%= product.image[1] %>"
-            width="276"
-            height="207"
-          />
-        </figure>
-      </div>
-      <div class="card-content px-1">
-        <div class="media">
-          <div class="media-content">
-            <p class="title is-5"><%= product.title %></p>
-            <p
-              class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"
-            >
-              <%= product.price %>
-            </p>
-          </div>
-        </div>
-      </div>
-    </a>
-    <% } %>
-  </div>
-</section>
-
-<section class="section pt-0 pb-5">
-  <h1 class="title mb-0 ml-4">Fitness accessories</h1>
-  <div class="is-flex is-flex-wrap-wrap" id="shop-content-3">
-    <% for (const [i, product] of efac.entries()) { %>
-    <a href="/shop/<%= product.href %>" class="card card-sm">
-      <div class="card-image">
-        <figure class="image is-4by3">
-          <img
-            src="<%= imgUrl %>/276x207/<%= product.image[0] %>"
-            alt="<%= product.image[1] %>"
-            width="276"
-            height="207"
-          />
-        </figure>
-      </div>
-      <div class="card-content px-1">
-        <div class="media">
-          <div class="media-content">
-            <p class="title is-5"><%= product.title %></p>
-            <p
-              class="ml-3 subtitle is-5 currency has-text-weight-bold has-text-grey"
-            >
-              <%= product.price %>
-            </p>
-          </div>
-        </div>
-      </div>
-    </a>
-    <% } %>
-  </div>
-</section>
-
+<!-- Blog Posts -->
+<% if (posts.length) { %>
 <section class="section pt-0 pb-5">
   <h1 class="title mb-0 ml-4">Latest Blog Posts</h1>
   <div id="blog-content">
@@ -131,6 +72,7 @@
     <% } %>
   </div>
 </section>
+<% } %>
 
 <!-- FOOTER -->
 <%- include('partials/footer'); %>

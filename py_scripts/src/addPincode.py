@@ -6,19 +6,21 @@ from pathlib import Path
 ##
 
 DIR = Path(__file__).parent
-env_path = DIR.parent / '..' / 'src' / '.env'
-csv_path = DIR / 'pincode.csv'
+ENV_PATH = DIR.parent / '..' / 'src' / '.env'
+CSV_PATH = DIR / 'pincode.csv'
 
-db = Model(env_path)
-db.connect()
+model = Model(ENV_PATH)
+db = model.connect()
 docs = []
 
-with csv_path.open() as f:
+with CSV_PATH.open() as f:
     f.readline()
 
     print("Collating...")
     while line := f.readline().strip('\n'):
+
         pincode, region, state = line.split(',')
+
         docs.append({
             'Pincode': pincode,
             'District': region,
@@ -27,8 +29,10 @@ with csv_path.open() as f:
 
 print(f'Inserting {len(docs)} pincodes')
 
-db.db.pincodes.insert_many(docs)
-inserted_count = db.db.pincodes.count_documents({})
-db.con.close()
+db.pincodes.insert_many(docs)
+
+inserted_count = model.db.pincodes.count_documents()
+
+model.con.close()
 
 print(f'Done. Inserted {inserted_count} pincodes')
