@@ -10,25 +10,21 @@ const rootController = async (req, res) => {
   const db = req.app.get("db");
 
   // mens t-shirts
-  res.locals.camxts = await getProductLists(
-    db,
-    { category: "camxts" },
-    4,
-    "camxts"
-  );
+  p1 = await getProductLists(db, { category: "camxts" }, 4, "camxts");
 
   // womens t-shirts
-  res.locals.cawxts = await getProductLists(
-    db,
-    { category: "cawxts" },
-    4,
-    "cawxts"
-  );
+  p2 = await getProductLists(db, { category: "cawxts" }, 4, "cawxts");
+
+  // exercise
+  p3 = await getProductLists(db, { category: "efac" }, 4, "efac");
 
   res.locals.posts = await getBlogPosts(db, 3);
 
-  // exercise
-  res.locals.efac = await getProductLists(db, { category: "efac" }, 4, "efac");
+  res.locals.product_lists = {
+    "T-shirts for Men": p1,
+    "T-shirts for Women": p2,
+    "Fitness accessories": p3,
+  };
 
   return res.render("index", {
     title: "FusionX - Home",
