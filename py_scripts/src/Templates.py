@@ -28,8 +28,8 @@ class BaseTemplate:
     Instantiate the Class and call the generate_file method
     '''
 
-    parent_columns = ('listing_type', 'brand', 'title',
-                      'category_code', 'href', 'gst')
+    parent_columns = ('listing_type', 'brand', 'title', 'category_code',
+                      'href', 'gst')
 
     child_columns = ('price', 'mrp', 'qty', 'image1', 'image2', 'image3',
                      'image4', 'image5', 'description')
@@ -98,18 +98,17 @@ class BaseTemplate:
 
         if self.type_columns is None:
             raise NotImplementedError(
-                f'{self.__class__.__name__} must have a type_columns attribute')
+                f'{self.__class__.__name__} must have a type_columns attribute'
+            )
 
         columns = self.reader.fieldnames
 
         if not columns:
             raise ValueError("Not a valid template file.")
 
-        for column in chain(self.parent_columns,
-                            self.child_columns,
-                            self.type_columns,
-                            self.other_spec_columns):
-            if not column in columns:
+        for column in chain(self.parent_columns, self.child_columns,
+                            self.type_columns, self.other_spec_columns):
+            if column not in columns:
                 raise KeyError(f'{column} column missing from {self.file}')
 
         # Must have atleast 1 parent listing with listing_type=MAIN
@@ -141,10 +140,11 @@ class BaseTemplate:
                     if column == 'gst' and row[column] == '':
                         has_gst_parent = False
 
-                    if (column == 'category_code' and
-                            not row['category_code'] in self.category_codes):
+                    if (column == 'category_code' and row['category_code']
+                            not in self.category_codes):
                         raise ValueError(
-                            f"Row {count}: {row['category_code']} not found in product_categories collection.")
+                            f"Row {count}: {row['category_code']} not found in product_categories collection."
+                        )
 
                     if row[column]:
                         continue
@@ -158,13 +158,13 @@ class BaseTemplate:
                 if not has_main:
                     raise ValueError(f'Row {count}: Parent row is missing')
 
-                for column in chain(self.child_columns,
-                                    self.spec_columns,
+                for column in chain(self.child_columns, self.spec_columns,
                                     self.other_spec_columns,
                                     self.type_columns):
 
                     # GST must be specified in either parent or all child rows
-                    if column == 'gst' and not has_gst_parent and row[column] == '':
+                    if column == 'gst' and not has_gst_parent and row[
+                            column] == '':
                         raise ValueError(
                             f'Row {count}: GST not set on parent or child')
 
@@ -244,7 +244,8 @@ class BaseTemplate:
 
         if not self.type_columns:
             raise NotImplementedError(
-                f'{self.__class__.__name__} must have a type_columns attribute')
+                f'{self.__class__.__name__} must have a type_columns attribute'
+            )
 
         columns = self.parent_columns + self.type_columns + self.spec_columns
 
@@ -271,9 +272,7 @@ class BaseTemplate:
         child_count = 1
         row_count = 2
 
-        items = self.db.products.find(
-            projection={'_id': 0, 'product_code': 1}
-        )
+        items = self.db.products.find(projection={'_id': 0, 'product_code': 1})
 
         self.codes = [item['product_code'] for item in items]
         product = None
@@ -340,7 +339,8 @@ class BaseTemplate:
             'href': link.lower().replace(' ', '-'),
         }
 
-    def _compile_variant(self, row: dict, category_code: str, child_count: int):
+    def _compile_variant(self, row: dict, category_code: str,
+                         child_count: int):
         'Returns a dictionary describing the product variant'
 
         # get the variants and set the variant_title
@@ -373,7 +373,7 @@ class BaseTemplate:
 
 
 class FoamRoller(BaseTemplate):
-    type_columns = ('density',)
+    type_columns = ('density', )
 
 
 class Clothes(BaseTemplate):

@@ -191,7 +191,11 @@ function prepItemsForCheckout(checkoutObj, offer, isIntraState) {
   // source: https://cleartax.in/s/gst-applicable-on-ecommerce-sale/
   for (const item of checkoutObj.items) addGst(item, isIntraState);
 
-  const subtotal = checkoutObj.items.reduce((a, b) => a + b.total, 0);
+  const subtotal = checkoutObj.items.reduce(
+    (total, item) => total + item.total,
+    0
+  );
+
   const total = subtotal + shipping;
 
   let checkout = {
@@ -268,9 +272,10 @@ function applyOfferToCheckout(offer, checkout, isIntraState) {
     checkout.appliedOffers.push(offer.code);
 
     checkout.subtotal = checkout.items.reduce(
-      (prev, curr) => prev + curr.total,
+      (total, item) => total + item.total,
       0
     );
+
     checkout.total =
       checkout.subtotal +
       checkout.shipping -
