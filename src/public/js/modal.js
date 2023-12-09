@@ -202,7 +202,7 @@ const modal = (function () {
     if (!items || items.length === 0) clear.setAttribute("disabled", true);
 
     const subtotal = items.reduce(
-      (prev, curr) => prev + curr.price * curr.qty,
+      (total, item) => total + item.price * item.qty,
       0
     );
 

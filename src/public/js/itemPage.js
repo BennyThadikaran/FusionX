@@ -365,7 +365,7 @@ const itemPage = (function () {
    * @return {Number}
    */
   function getSubTotal(cart) {
-    return cart.reduce((a, b) => a + b.qty * b.price, 0);
+    return cart.reduce((total, item) => total + item.qty * item.price, 0);
   }
 
   /**
@@ -510,10 +510,7 @@ const itemPage = (function () {
     if (idx > -1) {
       cart.splice(idx, 1);
       store.oSet("cart", cart, cartExpiry);
-      const subtotal = cart.reduce(
-        (prev, curr) => prev + curr.price * curr.qty,
-        0
-      );
+      const subtotal = getSubTotal(cart);
       document.getElementById("cart-subtotal").textContent = subtotal;
     }
 
