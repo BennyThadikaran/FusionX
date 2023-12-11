@@ -21,17 +21,13 @@ with CSV_PATH.open() as f:
 
         pincode, region, state = line.split(',')
 
-        docs.append({
-            'Pincode': pincode,
-            'District': region,
-            'State': state
-        })
+        docs.append({'Pincode': pincode, 'District': region, 'State': state})
 
 print(f'Inserting {len(docs)} pincodes')
 
-db.pincodes.insert_many(docs)
+res = db.pincodes.insert_many(docs)
 
-inserted_count = model.db.pincodes.count_documents()
+inserted_count = len(res.inserted_ids)
 
 model.con.close()
 
